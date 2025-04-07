@@ -9,14 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('tracks', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->string('artist');
-            $table->string('file_path'); // Путь к аудиофайлу
-            $table->timestamps();
+            $table->string('title');       // Название трека
+            $table->string('artist');      // Исполнитель
+            $table->string('file_path');   // Путь к аудиофайлу
+            $table->timestamps();          // created_at и updated_at
         });
     }
 
