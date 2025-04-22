@@ -3,6 +3,7 @@
         <h1 class="text-2xl font-bold mb-4">Список треков</h1>
         <ul>
             <li v-for="track in tracks" :key="track.id" class="mb-2">
+
                 🎵 {{ track.title }} — {{ track.artist }}
             </li>
         </ul>

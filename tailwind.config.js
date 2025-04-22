@@ -5,7 +5,16 @@ export default {
         './resources/**/*.vue',
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                spotify: {
+                    black: '#121212',
+                    dark: '#181818',
+                    green: '#1DB954',
+                    white: '#fff',
+                },
+            },
+        },
     },
     plugins: [],
 }

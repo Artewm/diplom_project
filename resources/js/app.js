@@ -1,5 +1,5 @@
 import './bootstrap';
 import { createApp } from 'vue'
-import TrackList from './components/TrackList.vue'
+import App from './App.vue'
 
-createApp(TrackList).mount('#app')
+createApp(App).mount('#app')
