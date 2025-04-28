@@ -1,32 +1,52 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import Sidebar from './components/Sidebar.vue';
-import MainContent from './components/MainContent.vue';
-import Player from './components/Player.vue';
-
-const tracks = ref([])
-
-onMounted(async () => {
-    const response = await axios.get('/api/tracks')
-    tracks.value = response.data
-})
-</script>
-
+<!-- Корневой компонент приложения -->
 <template>
-    <div class="h-screen bg-black text-spotify-white flex flex-col">
-        <!-- Основной контейнер -->
-        <div class="flex flex-1 overflow-hidden">
-            <!-- Боковая панель -->
-            <Sidebar />
-            <!-- Основной контент -->
-            <MainContent />
-        </div>
-        <!-- Плеер -->
-        <Player />
+  <div class="h-screen flex flex-col bg-black text-white">
+    <div class="flex-1 flex overflow-hidden">
+      <!-- Sidebar -->
+      <Sidebar />
+
+      <!-- Main Content -->
+      <main class="flex-1 flex flex-col overflow-hidden">
+        <router-view></router-view>
+      </main>
     </div>
+
+    <!-- Player -->
+    <Player />
+  </div>
 </template>
 
-<style scoped>
+<script>
+import Sidebar from './components/Sidebar.vue'
+import Player from './components/Player.vue'
 
-</style>
+export default {
+  name: 'App',
+  components: {
+    Sidebar,
+    Player
+  }
+}
+</script>
+
+<style>
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+</style> 
