@@ -30,24 +30,25 @@
   
   <script>
   import { RouterLink } from 'vue-router';
-import spotifyLogo from '../../../public/images/spotify.png'
+import spotifyLogo from '../../images/spotify.png'
 import { ref } from 'vue';
 import Registration from './Registration.vue'
 import Login from './Login.vue'
 
-const activeTab = ref('register');
 export default {
     data() {
         return {
-            name: null, // Имя
-            email: null, // Email
-            password: null, // Пароль
-            password_confirmation: null, // Подтверждение пароля
+            name: null,
+            email: null,
+            password: null,
+            password_confirmation: null,
+            spotifyLogo,
+            activeTab: 'register'
         }
     },
     methods: {
         store() {
-            axios.post('/api/users', {
+            axios.post('/api/registration', {
                 name: this.name,
                 email: this.email,
                 password: this.password,
