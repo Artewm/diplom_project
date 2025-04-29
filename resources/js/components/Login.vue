@@ -10,7 +10,7 @@
                     class="text-xl relative nav-link" 
                     :class="{ 'active': activeTab === 'login' }"
                     @mouseover="activeTab = 'login'">Вход</RouterLink>
-                <RouterLink to="/register" 
+                <RouterLink to="/registration" 
                     class="text-xl relative nav-link"
                     :class="{ 'active': activeTab === 'register' }"
                     @mouseover="activeTab = 'register'"
@@ -30,6 +30,8 @@
   import { RouterLink } from 'vue-router';
 import spotifyLogo from '../../../public/images/spotify.png'
 import { ref } from 'vue';
+import Registration from './Registration.vue'
+import Login from './Login.vue'
 
 const activeTab = ref('login');
   </script>

@@ -8,5 +8,8 @@ Route::apiResource('tracks', TrackController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/library', [LibraryController::class, 'index']);
-    Route::post('/library/tracks/{track}/favorite', [LibraryController::class, 'toggleFavorite']);
 });
+// Route::group(['namespace' => 'User', 'prefix' => 'users'], function () {
+//     Route::post('/', 'StoreController');
+// });
+Route::post('/registration', [StoreController::class, '__invoke']);

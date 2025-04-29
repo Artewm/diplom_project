@@ -11,29 +11,54 @@
                     :class="{ 'active': activeTab === 'login' }"
                     @mouseover="activeTab = 'login'"
                     @mouseleave="activeTab = 'register'">Вход</RouterLink>
-                <RouterLink to="/register" 
+                <RouterLink to="/registration" 
                     class="text-xl relative nav-link"
                     :class="{ 'active': activeTab === 'register' }"
                     @mouseover="activeTab = 'register'">Регистрация</RouterLink>
             </div>
             <div class="flex flex-col items-center justify-center w-full p-10 mb-40 gap-4">
-                <input type="text" placeholder="Имя" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="password" placeholder="Подтвердите пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="submit" value="Зарегистрироваться" class="w-full p-2 rounded-md  bg-green-500 text-white">
+                <input v-model="name" type="text" placeholder="Имя" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <input v-model="email" type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <input v-model="password" type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <input v-model="password_confirmation" type="password" placeholder="Подтвердите пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <input @click.prevent="store" type="submit" value="Зарегистрироваться" class="w-full p-2 rounded-md  bg-green-500 text-white">
             </div>
         </div>
     </div>
     
   </template>
   
-  <script setup>
+  <script>
   import { RouterLink } from 'vue-router';
 import spotifyLogo from '../../../public/images/spotify.png'
 import { ref } from 'vue';
+import Registration from './Registration.vue'
+import Login from './Login.vue'
 
 const activeTab = ref('register');
+export default {
+    data() {
+        return {
+            name: null, // Имя
+            email: null, // Email
+            password: null, // Пароль
+            password_confirmation: null, // Подтверждение пароля
+        }
+    },
+    methods: {
+        store() {
+            axios.post('/api/users', {
+                name: this.name,
+                email: this.email,
+                password: this.password,
+                password_confirmation: this.password_confirmation
+            }).then(response => {
+                console.log(response);
+            })
+        }
+    }
+}
+
   </script>
   
   <style scoped>
