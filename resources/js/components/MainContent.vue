@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import TrackList from './TrackList.vue'
+import Registration from './Registration.vue'
+import Login from './Login.vue'
 
 const playlists = ref([
   {
@@ -43,11 +45,16 @@ onMounted(async () => {
         </button>
       </div>
       <div class="flex items-center space-x-4">
-        <button class="p-2 rounded-full bg-black/40">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        </button>
+        <div class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold">
+          <router-link to="/registration">
+            Зарегистрироваться
+          </router-link>
+        </div>
+        <div class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold">
+          <router-link to="/login">
+            Войти
+          </router-link>
+        </div>
       </div>
     </header>
 

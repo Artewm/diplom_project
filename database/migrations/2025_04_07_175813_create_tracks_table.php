@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');       // Название трека
             $table->string('artist');      // Исполнитель
+            $table->string('genre');       // Жанр
             $table->string('file_path');   // Путь к аудиофайлу
             $table->timestamps();          // created_at и updated_at
         });
