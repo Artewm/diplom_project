@@ -38,10 +38,10 @@ import Login from './Login.vue'
 export default {
     data() {
         return {
-            name: null,
-            email: null,
-            password: null,
-            password_confirmation: null,
+            name: "",
+            email: "",
+            password: "",
+            password_confirmation: "",
             spotifyLogo,
             activeTab: 'register'
         }
