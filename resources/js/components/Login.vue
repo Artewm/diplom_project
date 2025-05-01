@@ -1,70 +1,90 @@
 <template>
-    <div class="flex flex-col items-center justify-center h-screen">
-        <div class="flex flex-col items-center justify-between w-1/4 h-2/3 bg-zinc-800 rounded-lg">
+    <div class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')"></div>
+      <div class="flex flex-col items-center justify-between w-1/5 h-2/3 bg-zinc-800 rounded-lg z-10">
             <div class="flex gap-2 items-center justify-center w-full mt-20">
                 <img :src="spotifyLogo" alt="logo" class="w-10 h-10">
                 <h2 class="text-xl font-bold">MUSIC LISTENER</h2>
             </div>
             <div class="flex gap-4 items-center justify-center w-full mt-20">
-                <RouterLink to="/login" 
-                    class="text-xl relative nav-link" 
-                    :class="{ 'active': activeTab === 'login' }"
-                    @mouseover="activeTab = 'login'">Вход</RouterLink>
-                <RouterLink to="/registration" 
-                    class="text-xl relative nav-link"
-                    :class="{ 'active': activeTab === 'register' }"
-                    @mouseover="activeTab = 'register'"
-                    @mouseleave="activeTab = 'login'">Регистрация</RouterLink>
+                <button 
+                  class="text-xl relative nav-link active" 
+                  @click="activeTab = 'login'">Вход</button>
+                <button 
+                  class="text-xl relative nav-link"
+                  @click="openRegistration">Регистрация</button>
             </div>
             <div class="flex flex-col items-center justify-center w-full p-10 mb-40 gap-4">
-                <input type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <input type="submit" value="Войти" class="w-full p-2 rounded-md  bg-green-500 text-white">
+                <input v-model="email" type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <input v-model="password" type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
+                <button @click.prevent="login" class="w-full p-2 rounded-md bg-green-500 text-white">Войти</button>
             </div>
         </div>
     </div>
+</template>
+  
+<script>
+import spotifyLogo from '../../images/spotify.png';
+import { ref, inject } from 'vue';
+
+export default {
+  name: 'Login',
+  emits: ['close'],
+  setup(props, { emit }) {
+    const activeTab = ref('login');
+    const email = ref('');
+    const password = ref('');
     
-  </template>
+    const openRegistrationModal = inject('openRegistrationModal');
+    
+    const openRegistration = () => {
+      emit('close');
+      openRegistrationModal();
+    };
+    
+    const login = () => {
+      axios.post('/api/auth/login', {
+        email: email.value,
+        password: password.value
+      }).then(response => {
+        localStorage.setItem('token', response.data.access_token);
+        emit('close');
+      }).catch(error => {
+        console.error('Ошибка авторизации:', error);
+      });
+    };
+    
+    return { 
+      activeTab, 
+      email, 
+      password, 
+      spotifyLogo, 
+      openRegistration,
+      login
+    };
+  }
+}
+</script>
   
-  <script setup>
-  import { RouterLink } from 'vue-router';
-import spotifyLogo from '../../../public/images/spotify.png'
-import { ref } from 'vue';
-import Registration from './Registration.vue'
-import Login from './Login.vue'
+<style scoped>
+.nav-link {
+  position: relative;
+}
 
-const activeTab = ref('login');
-  </script>
-  
-  <style scoped>
-  .active-tab::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #22c55e;
-  }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #22c55e;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
 
-  .nav-link {
-    position: relative;
-  }
-
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #22c55e;
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-  }
-
-  .nav-link.active::after {
-    transform: scaleX(1);
-  }
-  </style>
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+</style>
   

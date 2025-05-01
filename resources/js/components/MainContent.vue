@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import axios from 'axios'
 import TrackList from './TrackList.vue'
-import Registration from './Registration.vue'
-import Login from './Login.vue'
+
+const openLoginModal = inject('openLoginModal')
+const openRegistrationModal = inject('openRegistrationModal')
 
 const playlists = ref([
   {
@@ -45,16 +46,16 @@ onMounted(async () => {
         </button>
       </div>
       <div class="flex items-center space-x-4">
-        <div class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold">
-          <router-link to="/registration">
+        <button 
+          class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
+          @click="openRegistrationModal">
             Зарегистрироваться
-          </router-link>
-        </div>
-        <div class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold">
-          <router-link to="/login">
+        </button>
+        <button 
+          class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
+          @click="openLoginModal">
             Войти
-          </router-link>
-        </div>
+        </button>
       </div>
     </header>
 
