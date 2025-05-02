@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import Sidebar from './components/Sidebar.vue'
-import Player from './components/Player.vue'
-import LoginModal from './components/Login.vue'
-import RegistrationModal from './components/Registration.vue'
+import Sidebar from './components/layout/Sidebar.vue'
+import Player from './components/player/Player.vue'
+import LoginModal from './components/auth/Login.vue'
+import RegistrationModal from './components/auth/Registration.vue'
 import { ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 

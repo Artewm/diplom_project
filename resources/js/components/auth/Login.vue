@@ -24,7 +24,7 @@
 </template>
   
 <script>
-import spotifyLogo from '../../images/spotify.png';
+import spotifyLogo from '../../../images/spotify.png';
 import { ref, inject } from 'vue';
 
 export default {

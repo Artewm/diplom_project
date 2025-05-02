@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import MainContent from './components/MainContent.vue'
-import Search from './components/Search.vue'
-import Library from './components/Library.vue'
+import MainContent from './components/layout/MainContent.vue'
+import Search from './components/ui/Search.vue'
+import Library from './components/tracks/Library.vue'
+import Personal from './components/auth/Personal.vue'
 
 const routes = [
   {
@@ -28,6 +29,11 @@ const routes = [
     path: '/registration',
     name: 'registration',
     component: MainContent
+  },
+  {
+    path: '/personal',
+    name: 'personal',
+    component: Personal
   }
 ]
 

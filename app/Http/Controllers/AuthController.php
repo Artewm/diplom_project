@@ -54,6 +54,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
+    /*
     public function loginGet(Request $request)
     {
         $credentials = $request->only(['email', 'password']);
@@ -75,6 +76,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
+    */
 
     /**
      * Get the authenticated User.

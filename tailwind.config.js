@@ -13,6 +13,9 @@ export default {
                 'spotify-dark': '#181818',
                 'spotify-light': '#282828',
                 'spotify-text': '#B3B3B3',
+                'spotify-white': '#FFFFFF',
+                'spotify-gray': '#363636',
+                
             },
             animation: {
                 'fade-in': 'fadeIn 0.3s ease-in-out',

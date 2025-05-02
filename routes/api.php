@@ -14,7 +14,7 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'
 ], function ($router) {
-    Route::get('login', [AuthController::class, 'loginGet']);
+    // Route::get('login', [AuthController::class, 'loginGet']);
     Route::post('login', [AuthController::class, 'login']);
 });
 

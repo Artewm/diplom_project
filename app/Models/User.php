@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+// Удаляю неиспользуемый закомментированный импорт
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -56,6 +58,16 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Track::class, 'favorites');
     }
+
+    /**
+     * Получить плейлисты пользователя.
+     */
+    /*
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class);
+    }
+    */
 
     public function getJWTIdentifier()
     {

@@ -72,7 +72,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import spotifyLogo from '../../images/spotify.png';
+import spotifyLogo from '../../../images/spotify.png';
 
 export default {
   name: 'Sidebar',

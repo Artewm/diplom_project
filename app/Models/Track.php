@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Track extends Model
 {
@@ -24,4 +25,6 @@ class Track extends Model
     {
         return $this->belongsToMany(User::class, 'favorites');
     }
+
+   
 }
