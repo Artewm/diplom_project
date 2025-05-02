@@ -5,6 +5,7 @@ use App\Http\Controllers\TrackController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\User\StoreController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\User\GetController;
 
 
 Route::apiResource('tracks', TrackController::class);
@@ -35,3 +36,6 @@ Route::middleware('auth:sanctum')->group(function () {
 //     Route::post('/', 'StoreController');
 // });
 Route::post('/registration', [\App\Http\Controllers\User\StoreController::class, '__invoke']);
+
+// Маршрут для получения данных пользователя по ID
+Route::middleware(['api', 'auth:api'])->get('/users/{id}', [\App\Http\Controllers\User\GetController::class, '__invoke']);

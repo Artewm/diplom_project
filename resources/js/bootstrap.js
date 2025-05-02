@@ -13,6 +13,37 @@ window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+// Получаем JWT-токен из localStorage и добавляем его к заголовкам
+const token = localStorage.getItem('token');
+if (token) {
+    window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
+// Добавляем перехватчик ответов для обработки ошибок аутентификации
+window.axios.interceptors.response.use(
+    response => response,
+    error => {
+        // Если ошибка 401 (неавторизован), 403 (доступ запрещен) или 419 (просрочена сессия)
+        if (error.response && [401, 403, 419].includes(error.response.status)) {
+            // Удаляем токен из localStorage
+            localStorage.removeItem('token');
+            // Удаляем заголовок Authorization
+            delete window.axios.defaults.headers.common['Authorization'];
+            
+            // Если страница не является страницей авторизации или регистрации,
+            // перенаправляем на главную
+            if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+                console.log('Перенаправление на главную страницу из-за ошибки авторизации');
+                // Перезагружаем страницу после небольшой задержки
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 100);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting

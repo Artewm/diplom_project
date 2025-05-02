@@ -1,13 +1,19 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, computed } from 'vue'
 import axios from 'axios'
 import TrackList from '../tracks/TrackList.vue'
 import personalIcon from '../../../images/personal.png'
 import Personal from '../auth/Personal.vue'
 
+// Получение данных аутентификации
+const isAuthenticated = inject('isAuthenticated')
+const currentUser = inject('currentUser')
+
+// Получение функций модальных окон
 const openLoginModal = inject('openLoginModal')
 const openRegistrationModal = inject('openRegistrationModal')
 const openPersonalModal = inject('openPersonalModal')
+
 const playlists = ref([
   {
     id: 1,
@@ -19,6 +25,19 @@ const playlists = ref([
 
 const showPersonalMenu = ref(false)
 const personalMenuPosition = ref({ top: 0, right: 0 })
+
+// Получаем имя пользователя для отображения
+const userName = computed(() => {
+  if (!currentUser.value) return ''
+  
+  // Если есть имя из БД, используем его
+  if (currentUser.value.name) return currentUser.value.name
+  
+  // Иначе пробуем получить из других полей
+  if (currentUser.value.sub) return `Пользователь ${currentUser.value.sub}`
+  
+  return ''
+})
 
 const togglePersonalMenu = (event) => {
   showPersonalMenu.value = !showPersonalMenu.value
@@ -74,22 +93,30 @@ const tracks = ref([])
           </svg>
         </button>
       </div>
+      
+      <!-- Кнопки авторизации/пользователя -->
       <div class="flex items-center space-x-4">
-        <button 
-          class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
-          @click="openRegistrationModal">
-            Регистрация
-        </button>
-        <button 
-          class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
-          @click="openLoginModal">
-            Вход
-        </button>
-        <div class="relative">
+        <!-- Для неавторизованных пользователей -->
+        <template v-if="!isAuthenticated">
           <button 
-            class="bg-spotify-gray rounded-full p-2 text-black hover:bg-gray font-semibold personal-button"
+            class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
+            @click="openRegistrationModal">
+              Регистрация
+          </button>
+          <button 
+            class="bg-white rounded-full p-2 text-black hover:bg-gray-300 font-semibold"
+            @click="openLoginModal">
+              Вход
+          </button>
+        </template>
+        
+        <!-- Для авторизованных пользователей -->
+        <div v-if="isAuthenticated" class="relative">
+          <button 
+            class="bg-spotify-gray rounded-full p-2 text-white hover:bg-gray-700 font-semibold personal-button flex items-center gap-2"
             @click="togglePersonalMenu($event)">
             <img :src="personalIcon" alt="Personal" class="w-6 h-6">
+            <span v-if="userName" class="hidden sm:inline">{{ userName }}</span>
           </button>
           
           <!-- Выпадающее меню -->

@@ -15,11 +15,20 @@
                     @click="activeTab = 'register'">Регистрация</button>
             </div>
             <div class="flex flex-col items-center justify-center w-full p-10 mb-40 gap-4">
+                <div v-if="errorMessage" class="w-full p-2 bg-red-500/20 text-red-500 rounded-md text-center">
+                    {{ errorMessage }}
+                </div>
                 <input v-model="name" type="text" placeholder="Имя" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
                 <input v-model="email" type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
                 <input v-model="password" type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
                 <input v-model="password_confirmation" type="password" placeholder="Подтвердите пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <button @click.prevent="register" class="w-full p-2 rounded-md bg-green-500 text-white">Зарегистрироваться</button>
+                <button 
+                  @click.prevent="register" 
+                  class="w-full p-2 rounded-md bg-green-500 text-white flex items-center justify-center"
+                  :disabled="isLoading">
+                    <span v-if="isLoading">Загрузка...</span>
+                    <span v-else>Зарегистрироваться</span>
+                </button>
             </div>
         </div>
     </div>
@@ -38,26 +47,73 @@ export default {
         const email = ref('');
         const password = ref('');
         const password_confirmation = ref('');
+        const errorMessage = ref('');
+        const isLoading = ref(false);
         
         const openLoginModal = inject('openLoginModal');
+        const registerUser = inject('register');
         
         const openLogin = () => {
             emit('close');
             openLoginModal();
         };
         
-        const register = () => {
-            axios.post('/api/registration', {
-                name: name.value,
-                email: email.value,
-                password: password.value,
-                password_confirmation: password_confirmation.value
-            }).then(response => {
-                console.log(response);
+        const register = async () => {
+            // Сбрасываем сообщение об ошибке
+            errorMessage.value = '';
+            
+            // Валидация полей
+            if (!name.value) {
+                errorMessage.value = 'Введите имя';
+                return;
+            }
+            
+            if (!email.value) {
+                errorMessage.value = 'Введите email';
+                return;
+            }
+            
+            if (!password.value) {
+                errorMessage.value = 'Введите пароль';
+                return;
+            }
+            
+            if (password.value !== password_confirmation.value) {
+                errorMessage.value = 'Пароли не совпадают';
+                return;
+            }
+            
+            try {
+                isLoading.value = true;
+                await registerUser({
+                    name: name.value,
+                    email: email.value,
+                    password: password.value,
+                    password_confirmation: password_confirmation.value
+                });
                 emit('close');
-            }).catch(error => {
+            } catch (error) {
                 console.error('Ошибка регистрации:', error);
-            });
+                
+                // Обработка ошибок валидации с сервера
+                if (error.response && error.response.data) {
+                    if (error.response.data.message) {
+                        errorMessage.value = error.response.data.message;
+                    } else if (error.response.data.errors) {
+                        // Собираем все ошибки валидации в одну строку
+                        const errorMessages = Object.values(error.response.data.errors)
+                            .flat()
+                            .join(', ');
+                        errorMessage.value = errorMessages;
+                    } else {
+                        errorMessage.value = 'Ошибка при регистрации. Попробуйте еще раз.';
+                    }
+                } else {
+                    errorMessage.value = 'Ошибка при регистрации. Попробуйте еще раз.';
+                }
+            } finally {
+                isLoading.value = false;
+            }
         };
         
         return {
@@ -68,7 +124,9 @@ export default {
             password_confirmation,
             spotifyLogo,
             register,
-            openLogin
+            openLogin,
+            errorMessage,
+            isLoading
         };
     }
 }

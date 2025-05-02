@@ -15,9 +15,18 @@
                   @click="openRegistration">Регистрация</button>
             </div>
             <div class="flex flex-col items-center justify-center w-full p-10 mb-40 gap-4">
+                <div v-if="errorMessage" class="w-full p-2 bg-red-500/20 text-red-500 rounded-md text-center">
+                    {{ errorMessage }}
+                </div>
                 <input v-model="email" type="text" placeholder="Email" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
                 <input v-model="password" type="password" placeholder="Пароль" class="w-full p-2 rounded-md bg-transparent border-2 border-gray-300">
-                <button @click.prevent="login" class="w-full p-2 rounded-md bg-green-500 text-white">Войти</button>
+                <button 
+                  @click.prevent="login" 
+                  class="w-full p-2 rounded-md bg-green-500 text-white flex items-center justify-center"
+                  :disabled="isLoading">
+                    <span v-if="isLoading">Загрузка...</span>
+                    <span v-else>Войти</span>
+                </button>
             </div>
         </div>
     </div>
@@ -34,24 +43,51 @@ export default {
     const activeTab = ref('login');
     const email = ref('');
     const password = ref('');
+    const errorMessage = ref('');
+    const isLoading = ref(false);
     
     const openRegistrationModal = inject('openRegistrationModal');
+    const loginUser = inject('login');
     
     const openRegistration = () => {
       emit('close');
       openRegistrationModal();
     };
     
-    const login = () => {
-      axios.post('/api/auth/login', {
-        email: email.value,
-        password: password.value
-      }).then(response => {
-        localStorage.setItem('token', response.data.access_token);
+    const login = async () => {
+      // Сбрасываем сообщение об ошибке
+      errorMessage.value = '';
+      
+      // Проверка валидации
+      if (!email.value) {
+        errorMessage.value = 'Введите email';
+        return;
+      }
+      
+      if (!password.value) {
+        errorMessage.value = 'Введите пароль';
+        return;
+      }
+      
+      try {
+        isLoading.value = true;
+        await loginUser({
+          email: email.value,
+          password: password.value
+        });
         emit('close');
-      }).catch(error => {
+      } catch (error) {
         console.error('Ошибка авторизации:', error);
-      });
+        
+        // Отображаем ошибку пользователю
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage.value = error.response.data.message;
+        } else {
+          errorMessage.value = 'Ошибка при входе. Проверьте логин и пароль.';
+        }
+      } finally {
+        isLoading.value = false;
+      }
     };
     
     return { 
@@ -60,7 +96,9 @@ export default {
       password, 
       spotifyLogo, 
       openRegistration,
-      login
+      login,
+      errorMessage,
+      isLoading
     };
   }
 }
