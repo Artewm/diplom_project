@@ -37,9 +37,10 @@ const routes = [
     component: Personal
   },
   {
-    path: '/playlist',
+    path: '/playlist/:id',
     name: 'playlist',
-    component: Playlist
+    component: Playlist,
+    props: true
   }
 ]
 

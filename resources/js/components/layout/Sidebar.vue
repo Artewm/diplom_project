@@ -5,12 +5,11 @@
     <div class="flex items-center justify-start gap-4 p-6">
       <img :src="spotifyLogo" class="h-8 text-white" alt="spotify logo">
       <h2 class="text-sm font-bold">MUSIC LISTENER</h2>
-        
     </div>
 
     <!-- Navigation -->
-    <nav class=" px-2 h-64">
-      <ul class="space-y-2" >
+    <nav class="px-2 h-64">
+      <ul class="space-y-2">
         <li>
           <router-link to="/" class="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors">
             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
@@ -40,7 +39,10 @@
 
     <!-- Playlists -->
     <div class="px-6 py-4">
-      <button class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+      <button 
+        v-if="isAuthenticated" 
+        @click="showCreatePlaylistModal = true" 
+        class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
         <div class="w-6 h-6 bg-white/10 rounded-sm flex items-center justify-center">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -48,6 +50,9 @@
         </div>
         <span>Создать плейлист</span>
       </button>
+      <div v-else class="text-sm text-gray-400 py-2">
+        Войдите, чтобы создавать плейлисты
+      </div>
     </div>
 
     <!-- Divider -->
@@ -57,38 +62,120 @@
 
     <!-- Playlists List -->
     <div class="flex-1 px-2 py-4 overflow-y-auto">
-      <ul class="space-y-2">
+      <div v-if="loading" class="text-center py-4 text-gray-400">
+        Загрузка плейлистов...
+      </div>
+      <div v-else-if="error" class="text-center py-4 text-red-400">
+        {{ error }}
+      </div>
+      <ul v-else class="space-y-2">
         <li v-for="playlist in playlists" :key="playlist.id">
-          <!-- <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors truncate">
+          <router-link 
+            :to="{ name: 'playlist', params: { id: playlist.id } }" 
+            class="block px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors truncate">
             {{ playlist.name }}
-          </a> -->
-          <router-link to="/playlist">
-            <!-- <Playlist /> -->
-             {{ playlist.name }}
+            <span class="text-xs text-gray-400 ml-2">({{ playlist.tracks_count || 0 }})</span>
           </router-link>
+        </li>
+        <li v-if="playlists.length === 0 && isAuthenticated" class="text-center py-2 text-gray-400 text-sm">
+          У вас пока нет плейлистов
         </li>
       </ul>
     </div>
+    
+    <!-- Модальное окно создания плейлиста -->
+    <CreatePlaylistModal
+      v-if="showCreatePlaylistModal"
+      @close="showCreatePlaylistModal = false"
+      @playlist-created="onPlaylistCreated"
+    />
   </aside>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted, computed, inject, watch } from 'vue';
 import spotifyLogo from '../../../images/spotify.png';
+import playlistService from '../../services/playlist';
+import CreatePlaylistModal from '../playlist/CreatePlaylistModal.vue';
+import mitt from 'mitt';
+
+// Получаем экземпляр шины событий если её еще нет
+const emitter = window.emitter || (window.emitter = mitt());
 
 export default {
   name: 'Sidebar',
+  components: {
+    CreatePlaylistModal
+  },
   setup() {
-    const router = useRouter();
+    const playlists = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+    
+    // Получаем состояние аутентификации из App.vue через inject
+    const isAuthenticated = inject('isAuthenticated');
+    
+    // Состояние для создания плейлиста
+    const showCreatePlaylistModal = ref(false);
+    
+    // Загрузка плейлистов пользователя
+    const loadUserPlaylists = async () => {
+      if (!isAuthenticated.value) {
+        playlists.value = [];
+        return;
+      }
+      
+      loading.value = true;
+      error.value = null;
+      
+      try {
+        const userPlaylists = await playlistService.getUserPlaylists();
+        playlists.value = userPlaylists;
+      } catch (err) {
+        console.error('Ошибка при загрузке плейлистов:', err);
+        error.value = 'Не удалось загрузить плейлисты';
+      } finally {
+        loading.value = false;
+      }
+    };
+    
+    // Обработка события создания плейлиста
+    const onPlaylistCreated = (newPlaylist) => {
+      // Добавляем новый плейлист в список
+      playlists.value.push(newPlaylist);
+      showCreatePlaylistModal.value = false;
+    };
+    
+    // Обработка события удаления плейлиста
+    const removeDeletedPlaylist = (playlistId) => {
+      playlists.value = playlists.value.filter(p => p.id !== playlistId);
+    };
+    
+    // Следим за изменением статуса аутентификации
+    watch(isAuthenticated, (newValue) => {
+      if (newValue) {
+        // Если пользователь авторизовался, загружаем его плейлисты
+        loadUserPlaylists();
+      } else {
+        // Если пользователь вышел, очищаем список плейлистов
+        playlists.value = [];
+      }
+    });
+    
+    // Подписываемся на событие удаления плейлиста
+    onMounted(() => {
+      loadUserPlaylists();
+      emitter.on('playlist-deleted', removeDeletedPlaylist);
+    });
     
     return {
-      playlists: [
-        { id: 1, name: 'Мой плейлист #1' },
-        { id: 2, name: 'Любимые треки' },
-      ],
-      spotifyLogo
+      playlists,
+      spotifyLogo,
+      loading,
+      error,
+      isAuthenticated,
+      showCreatePlaylistModal,
+      onPlaylistCreated
     }
   }
 }
@@ -102,6 +189,7 @@ export default {
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: hsla(0,0%,100%,.3);
+  border-radius: 4px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {

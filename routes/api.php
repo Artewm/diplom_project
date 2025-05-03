@@ -6,6 +6,8 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\User\StoreController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\GetController;
+use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\FavoriteController;
 
 
 Route::apiResource('tracks', TrackController::class);
@@ -27,6 +29,30 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
+});
+
+// Маршруты для работы с плейлистами (требуется JWT токен)
+Route::group([
+    'middleware' => ['api', 'auth:api'],
+    'prefix' => 'playlists'
+], function ($router) {
+    Route::get('/', [PlaylistController::class, 'getUserPlaylists']);
+    Route::post('/', [PlaylistController::class, 'create']);
+    Route::get('/{id}', [PlaylistController::class, 'show']);
+    Route::put('/{id}', [PlaylistController::class, 'update']);
+    Route::delete('/{id}', [PlaylistController::class, 'delete']);
+    Route::post('/{id}/tracks', [PlaylistController::class, 'addTrack']);
+    Route::delete('/{id}/tracks', [PlaylistController::class, 'removeTrack']);
+});
+
+// Маршруты для работы с избранными треками (требуется JWT токен)
+Route::group([
+    'middleware' => ['api', 'auth:api'],
+    'prefix' => 'favorites'
+], function ($router) {
+    Route::get('/', [FavoriteController::class, 'index']);
+    Route::post('/{trackId}', [FavoriteController::class, 'add']);
+    Route::delete('/{trackId}', [FavoriteController::class, 'remove']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

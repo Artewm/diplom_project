@@ -62,12 +62,10 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Получить плейлисты пользователя.
      */
-    /*
     public function playlists(): HasMany
     {
         return $this->hasMany(Playlist::class);
     }
-    */
 
     public function getJWTIdentifier()
     {
