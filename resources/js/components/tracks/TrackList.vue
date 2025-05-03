@@ -6,13 +6,17 @@
             <th class="px-6 py-3 text-left w-12">#</th>
             <th class="px-6 py-3 text-left">Название</th>
             <th class="px-6 py-3 text-left">Исполнитель</th>
-            <th class="px-6 py-3 text-right w-24">Длит.</th>
+            <th class="px-6 py-3 text-right w-24 pl-4">
+              <div class="flex items-center justify-center">
+                <img :src="durationIcon" alt="duration" class="w-4 h-4">
+              </div>
+            </th>
           </tr>
         </thead>
   
         <tbody class="divide-y divide-white/5">
           <tr 
-            v-for="(track, index) in tracks" 
+            v-for="(track, index) in props.tracks" 
             :key="track.id"
             class="group hover:bg-white/5 transition duration-200"
             @mouseenter="hoveredTrack = track.id"
@@ -30,9 +34,9 @@
             <td class="px-6 py-3">
               <div class="flex items-center min-w-0">
                 <img
-                  :src="track.image || 'https://via.placeholder.com/40'"
+                  :src="track.image || PlayIcon"
                   :alt="track.title"
-                  class="w-10 h-10 object-cover rounded-md mr-4 flex-shrink-0"
+                  class="w-10 h-10 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0 p-2"
                 />
                 <div class="text-white font-medium truncate">
                   {{ track.title }}
@@ -46,7 +50,7 @@
             </td>
   
             <!-- Длительность -->
-            <td class="px-6 py-3 text-right text-gray-400">
+            <td class="px-6 py-3 text-center text-gray-400">
               {{ formatDuration(track.duration) }}
             </td>
           </tr>
@@ -60,21 +64,19 @@
   
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, defineProps } from 'vue'
 //   import { PlayIcon } from '@heroicons/vue/24/solid'
-  import axios from 'axios'
+import PlayIcon from '../../../images/baseMusic.png'
+import durationIcon from '../../../images/duration.png'
   
-  const tracks = ref([])
-  const hoveredTrack = ref(null)
-  
-  onMounted(async () => {
-    try {
-      const response = await axios.get('/api/tracks')
-      tracks.value = response.data
-    } catch (error) {
-      console.error('Ошибка при загрузке треков:', error)
+  const props = defineProps({
+    tracks: {
+      type: Array,
+      default: () => []
     }
   })
+  
+  const hoveredTrack = ref(null)
   
   const playTrack = (track) => {
     console.log('Playing track:', track.title)

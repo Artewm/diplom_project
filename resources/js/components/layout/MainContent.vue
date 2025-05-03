@@ -14,14 +14,14 @@ const openLoginModal = inject('openLoginModal')
 const openRegistrationModal = inject('openRegistrationModal')
 const openPersonalModal = inject('openPersonalModal')
 
-const playlists = ref([
-  {
-    id: 1,
-    title: 'Мой плейлист 1',
-    description: 'Kendrick Lamar, Drake, J. Cole и другие',
-    image: 'https://via.placeholder.com/150'
-  },
-])
+// const playlists = ref([
+//   {
+//     id: 1,
+//     title: 'Мой плейлист 1',
+//     description: 'Kendrick Lamar, Drake, J. Cole и другие',
+//     image: 'https://via.placeholder.com/150'
+//   },
+// ])
 
 const showPersonalMenu = ref(false)
 const personalMenuPosition = ref({ top: 0, right: 0 })
@@ -46,7 +46,7 @@ const togglePersonalMenu = (event) => {
     const rect = event.target.getBoundingClientRect()
     personalMenuPosition.value = {
       top: `${rect.bottom + 5}px`,
-      right: `${window.innerWidth - rect.right}px`
+      right: `${window.innerWidth - rect.right + 20}px`
     }
   }
 }
@@ -113,10 +113,10 @@ const tracks = ref([])
         <!-- Для авторизованных пользователей -->
         <div v-if="isAuthenticated" class="relative">
           <button 
-            class="bg-spotify-gray rounded-full p-2 text-white hover:bg-gray-700 font-semibold personal-button flex items-center gap-2"
+            class="bg-spotify-gray rounded-full p-2 text-white hover:bg-gray-700 font-semibold personal-button flex items-center gap-3 pl-4"
             @click="togglePersonalMenu($event)">
             <img :src="personalIcon" alt="Personal" class="w-6 h-6">
-            <span v-if="userName" class="hidden sm:inline">{{ userName }}</span>
+            <span v-if="userName" class="hidden sm:inline pr-4">{{ userName }}</span>
           </button>
           
           <!-- Выпадающее меню -->
@@ -147,10 +147,11 @@ const tracks = ref([])
 
 .personal-menu-container {
   animation: fadeIn 0.2s ease-out;
+  transform: translateX(-30px);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate(-30px, -10px); }
+  to { opacity: 1; transform: translateX(-30px); }
 }
 </style>

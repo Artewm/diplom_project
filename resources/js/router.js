@@ -3,6 +3,7 @@ import MainContent from './components/layout/MainContent.vue'
 import Search from './components/ui/Search.vue'
 import Library from './components/tracks/Library.vue'
 import Personal from './components/auth/Personal.vue'
+import Playlist from './components/playlist/Playlist.vue'
 
 const routes = [
   {
@@ -34,6 +35,11 @@ const routes = [
     path: '/personal',
     name: 'personal',
     component: Personal
+  },
+  {
+    path: '/playlist',
+    name: 'playlist',
+    component: Playlist
   }
 ]
 

@@ -1,6 +1,6 @@
 <!-- Боковая панель навигации -->
 <template>
-  <aside class="w-60 flex flex-col bg-black text-white h-screen">
+  <aside class="w-60 flex flex-col bg-spotify-black text-white h-screen">
     <!-- Logo -->
     <div class="flex items-center justify-start gap-4 p-6">
       <img :src="spotifyLogo" class="h-8 text-white" alt="spotify logo">
@@ -59,9 +59,13 @@
     <div class="flex-1 px-2 py-4 overflow-y-auto">
       <ul class="space-y-2">
         <li v-for="playlist in playlists" :key="playlist.id">
-          <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors truncate">
+          <!-- <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors truncate">
             {{ playlist.name }}
-          </a>
+          </a> -->
+          <router-link to="/playlist">
+            <!-- <Playlist /> -->
+             {{ playlist.name }}
+          </router-link>
         </li>
       </ul>
     </div>

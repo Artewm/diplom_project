@@ -126,7 +126,7 @@ export default {
   async register(userData) {
     try {
       // Выполняем запрос на регистрацию
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post('/api/registration', userData);
       console.log('Ответ API при регистрации:', response.data);
       
       const token = response.data.access_token || response.data.token;
