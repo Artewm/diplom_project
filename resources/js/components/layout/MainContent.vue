@@ -1,9 +1,14 @@
 <script setup>
-import { ref, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, inject, computed, watch } from 'vue'
 import axios from 'axios'
 import TrackList from '../tracks/TrackList.vue'
 import personalIcon from '../../../images/personal.png'
 import Personal from '../auth/Personal.vue'
+import favoritesService from '../../services/favorites'
+import mitt from 'mitt'
+
+// Создаем экземпляр шины событий если её еще нет
+const emitter = window.emitter || (window.emitter = mitt())
 
 // Получение данных аутентификации
 const isAuthenticated = inject('isAuthenticated')
@@ -25,6 +30,9 @@ const openPersonalModal = inject('openPersonalModal')
 
 const showPersonalMenu = ref(false)
 const personalMenuPosition = ref({ top: 0, right: 0 })
+const tracks = ref([])
+const favorites = ref([])
+const loadingFavorites = ref(false)
 
 // Получаем имя пользователя для отображения
 const userName = computed(() => {
@@ -63,6 +71,69 @@ const closeMenuOnClickOutside = (event) => {
   }
 }
 
+// Загрузка избранных треков
+const fetchFavorites = async () => {
+  if (!isAuthenticated.value) {
+    favorites.value = []
+    return
+  }
+  
+  loadingFavorites.value = true
+  
+  try {
+    const response = await favoritesService.getUserFavorites()
+    if (response && response.data) {
+      favorites.value = response.data
+      console.log('Загружено избранных треков:', favorites.value.length)
+    } else {
+      favorites.value = []
+    }
+  } catch (err) {
+    console.error('Ошибка при загрузке избранных треков:', err)
+    favorites.value = []
+  } finally {
+    loadingFavorites.value = false
+  }
+}
+
+// Добавление трека в избранное
+const addToFavorites = async (trackId) => {
+  try {
+    await favoritesService.addToFavorites(trackId)
+    // Найти трек среди всех треков
+    const track = tracks.value.find(t => t.id === trackId)
+    if (track) {
+      // Добавляем его в избранное локально
+      favorites.value.push(track)
+      console.log('Добавлен трек в избранное:', track.title)
+    }
+    // Оповещаем остальные компоненты
+    emitter.emit('favorite-added', trackId)
+  } catch (err) {
+    console.error('Ошибка при добавлении трека в избранное:', err)
+  }
+}
+
+// Удаление трека из избранного
+const removeFromFavorites = async (trackId) => {
+  try {
+    await favoritesService.removeFromFavorites(trackId)
+    favorites.value = favorites.value.filter(track => track.id !== trackId)
+    emitter.emit('favorite-removed', trackId) // Отправляем событие
+  } catch (err) {
+    console.error('Ошибка при удалении трека из избранного:', err)
+  }
+}
+
+// Следим за изменением статуса авторизации
+watch(isAuthenticated, (newValue) => {
+  if (newValue) {
+    fetchFavorites()
+  } else {
+    favorites.value = []
+  }
+})
+
 onMounted(async () => {
   document.addEventListener('click', closeMenuOnClickOutside)
   
@@ -72,9 +143,21 @@ onMounted(async () => {
   } catch (error) {
     console.error('Ошибка при загрузке треков:', error)
   }
+  
+  // Загружаем избранные треки
+  if (isAuthenticated.value) {
+    fetchFavorites()
+  }
+  
+  // Подписываемся на события добавления/удаления из избранного
+  emitter.on('favorite-added', () => {
+    fetchFavorites()
+  })
+  
+  emitter.on('favorite-removed', (trackId) => {
+    favorites.value = favorites.value.filter(track => track.id !== trackId)
+  })
 })
-
-const tracks = ref([])
 </script>
 
 <template>
@@ -131,9 +214,14 @@ const tracks = ref([])
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto bg-gradient-to-b from-indigo-900 to-black p-8">
-      
-        <TrackList :tracks="tracks" />
-
+      <h1 class="text-2xl font-bold text-white mb-6">Популярные треки</h1>
+      <TrackList 
+        :tracks="tracks" 
+        :favorites="favorites" 
+        :showAddToFavorites="isAuthenticated" 
+        :showRemoveFromFavorites="false"
+        @add-to-favorites="addToFavorites" 
+      />
     </main>
   </div>
 </template>

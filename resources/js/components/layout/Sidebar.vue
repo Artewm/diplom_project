@@ -28,14 +28,24 @@
         </li>
         <li>
           <router-link to="/library" class="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors">
-            <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14.5 2.134a1 1 0 0 1 1 0l6 3.464a1 1 0 0 1 .5.866V21a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V3a1 1 0 0 1 .5-.866zM16 4.732V20h4V7.041l-4-2.309zM3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H3zm1-2h4V4H4v16z"/>
-            </svg>
+            <img :src="mediateka" class="w-6 h-6 mr-4" alt="mediateka">
             Медиатека
           </router-link>
         </li>
       </ul>
     </nav>
+
+    <!-- Liked tracks -->
+    <div class="">
+      <router-link v-if="isAuthenticated" to="/favorites" class="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors">
+        <div class="liked-songs-icon w-6 h-6 mr-2 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3.17647C7.0253 1.94647 5.19012 1.52647 3.66012 2.38235C2.13012 3.23823 1.49717 5.05647 2.0853 6.55823C2.67344 8.06 6.04295 11.36 8 12C9.95705 11.36 13.3266 8.06 13.9147 6.55823C14.5028 5.05647 13.8699 3.23823 12.3399 2.38235C10.8099 1.52647 8.9747 1.94647 8 3.17647Z" fill="white"/>
+          </svg>
+        </div>
+        Любимые треки
+      </router-link>
+    </div>
 
     <!-- Playlists -->
     <div class="px-6 py-4">
@@ -98,7 +108,8 @@ import spotifyLogo from '../../../images/spotify.png';
 import playlistService from '../../services/playlist';
 import CreatePlaylistModal from '../playlist/CreatePlaylistModal.vue';
 import mitt from 'mitt';
-
+import mediateka from '../../../images/mediateka.png';
+import favorites from '../playlist/Favorites.vue';
 // Получаем экземпляр шины событий если её еще нет
 const emitter = window.emitter || (window.emitter = mitt());
 
@@ -175,7 +186,9 @@ export default {
       error,
       isAuthenticated,
       showCreatePlaylistModal,
-      onPlaylistCreated
+      onPlaylistCreated,
+      mediateka,
+      favorites
     }
   }
 }
@@ -198,5 +211,13 @@ export default {
 
 .overflow-y-auto::-webkit-scrollbar-track {
   background: transparent;
+}
+
+.liked-songs-icon {
+  background: linear-gradient(135deg, #450af5 0%, #8e8ee5 40%, #c4efd9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
 }
 </style>

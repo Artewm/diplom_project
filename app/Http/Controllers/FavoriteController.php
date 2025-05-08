@@ -6,6 +6,7 @@ use App\Models\Favorite;
 use App\Models\Track;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FavoriteController extends Controller
 {
@@ -17,7 +18,16 @@ class FavoriteController extends Controller
     public function index(): JsonResponse
     {
         $user = Auth::user();
-        $favoriteTracks = $user->favoriteTracks()->with('user')->get();
+        
+        if (!$user) {
+            return response()->json(['message' => 'Пользователь не авторизован'], 401);
+        }
+        
+        // Получаем полные данные о треках, которые находятся в избранном у пользователя
+        $favoriteTracks = Track::join('favorites', 'tracks.id', '=', 'favorites.track_id')
+            ->where('favorites.user_id', $user->id)
+            ->select('tracks.*') // Выбираем только данные из таблицы треков
+            ->get();
         
         return response()->json($favoriteTracks);
     }

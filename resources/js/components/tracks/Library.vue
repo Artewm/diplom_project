@@ -1,7 +1,7 @@
 <template>
     <div class="library-container p-4">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Моя библиотека</h2>
+            <h2 class="text-2xl font-bold">Медиатека</h2>
             <div class="flex gap-4">
                 <button 
                     v-for="filter in filters" 
@@ -27,37 +27,87 @@
             {{ error }}
         </div>
 
-        <div v-else-if="filteredTracks.length === 0" class="text-center py-8 text-gray-400">
-            Нет сохраненных треков
+        <div v-else-if="filteredItems.length === 0" class="text-center py-8 text-gray-400">
+            Нет сохраненных элементов
         </div>
 
         <div v-else class="bg-spotify-black rounded-md">
-            <TrackList :tracks="filteredTracks" />
+            <TrackList 
+                v-if="currentFilter !== 'Исполнители'" 
+                :tracks="filteredTracks" 
+                :favorites="favorites"
+                :showAddToFavorites="true"
+                :showRemoveFromFavorites="true"
+                @add-to-favorites="addToFavorites"
+                @remove-from-favorites="removeFromFavorites"
+            />
+            <ArtistList v-else :artists="uniqueArtists" />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import TrackList from './TrackList.vue';
+import ArtistList from './ArtistList.vue';
+import favoritesService from '../../services/favorites';
+import mitt from 'mitt';
+import { inject } from 'vue';
+
+// Получение данных аутентификации
+const isAuthenticated = inject('isAuthenticated')
+
+// Создаем экземпляр шины событий если её еще нет
+const emitter = window.emitter || (window.emitter = mitt())
 
 const tracks = ref([]);
+const favorites = ref([]);
 const isLoading = ref(true);
+const loadingFavorites = ref(false);
 const error = ref(null);
 const filters = ['Все', 'Треки', 'Альбомы', 'Исполнители'];
 const currentFilter = ref('Все');
 
 const filteredTracks = computed(() => {
     if (currentFilter.value === 'Все') return tracks.value;
+    if (currentFilter.value === 'Исполнители') return tracks.value;
     return tracks.value.filter(track => {
         switch (currentFilter.value) {
             case 'Треки': return !track.is_album;
             case 'Альбомы': return track.is_album;
-            case 'Исполнители': return track.is_artist;
             default: return true;
         }
     });
+});
+
+const uniqueArtists = computed(() => {
+    // Получаем уникальных исполнителей и считаем их треки
+    const artistMap = new Map();
+    
+    tracks.value.forEach(track => {
+        if (!track.artist) return;
+        
+        if (artistMap.has(track.artist)) {
+            const artist = artistMap.get(track.artist);
+            artist.trackCount++;
+        } else {
+            artistMap.set(track.artist, {
+                name: track.artist,
+                trackCount: 1
+            });
+        }
+    });
+    
+    // Преобразуем Map в массив
+    return Array.from(artistMap.values());
+});
+
+const filteredItems = computed(() => {
+    if (currentFilter.value === 'Исполнители') {
+        return uniqueArtists.value;
+    }
+    return filteredTracks.value;
 });
 
 const loadTracks = async () => {
@@ -73,28 +123,78 @@ const loadTracks = async () => {
     }
 };
 
-const playTrack = (track) => {
-    // Эмитим событие для родительского компонента
-    emit('play-track', track);
-};
-
-const toggleFavorite = async (track) => {
+// Загрузка избранных треков
+const fetchFavorites = async () => {
+    if (!isAuthenticated.value) {
+        favorites.value = [];
+        return;
+    }
+    
+    loadingFavorites.value = true;
+    
     try {
-        await axios.post(`/api/tracks/${track.id}/toggle-favorite`);
-        track.is_favorite = !track.is_favorite;
+        const response = await favoritesService.getUserFavorites();
+        if (response && response.data) {
+            favorites.value = response.data;
+            console.log('Библиотека загрузила избранные треки:', favorites.value.length);
+        } else {
+            favorites.value = [];
+        }
     } catch (err) {
-        console.error('Error toggling favorite:', err);
+        console.error('Ошибка при загрузке избранных треков в библиотеке:', err);
+        favorites.value = [];
+    } finally {
+        loadingFavorites.value = false;
     }
 };
 
-const formatDuration = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+// Добавление трека в избранное
+const addToFavorites = async (trackId) => {
+    try {
+        await favoritesService.addToFavorites(trackId);
+        await fetchFavorites(); // Обновляем список избранных треков
+        emitter.emit('favorite-added', trackId); // Отправляем событие
+    } catch (err) {
+        console.error('Ошибка при добавлении трека в избранное:', err);
+    }
 };
+
+// Удаление трека из избранного
+const removeFromFavorites = async (trackId) => {
+    try {
+        await favoritesService.removeFromFavorites(trackId);
+        favorites.value = favorites.value.filter(track => track.id !== trackId);
+        emitter.emit('favorite-removed', trackId); // Отправляем событие
+    } catch (err) {
+        console.error('Ошибка при удалении трека из избранного:', err);
+    }
+};
+
+// Следим за изменением статуса авторизации
+watch(isAuthenticated, (newValue) => {
+    if (newValue) {
+        fetchFavorites();
+    } else {
+        favorites.value = [];
+    }
+});
 
 onMounted(() => {
     loadTracks();
+    
+    // Загружаем избранные треки если пользователь авторизован
+    if (isAuthenticated.value) {
+        fetchFavorites();
+    }
+    
+    // Подписываемся на события добавления/удаления из избранного
+    emitter.on('favorite-added', () => {
+        fetchFavorites();
+    });
+    
+    emitter.on('favorite-removed', (trackId) => {
+        favorites.value = favorites.value.filter(track => track.id !== trackId);
+    });
 });
 </script>
 

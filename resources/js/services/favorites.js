@@ -10,7 +10,16 @@ export default {
      * @returns {Promise} Промис с результатом запроса
      */
     getUserFavorites() {
-        return axios.get('/api/favorites');
+        return axios.get('/api/favorites')
+            .then(response => {
+                // Проверка ответа и логирование для отладки
+                console.log('Ответ API favorites:', response);
+                return response;
+            })
+            .catch(error => {
+                console.error('Ошибка в запросе избранного:', error);
+                throw error;
+            });
     },
 
     /**
@@ -41,6 +50,7 @@ export default {
      * @returns {Boolean} true если трек в избранном, false в противном случае
      */
     isTrackFavorite(favorites, trackId) {
+        if (!Array.isArray(favorites) || !favorites.length) return false;
         return favorites.some(track => track.id === trackId);
     }
 }; 

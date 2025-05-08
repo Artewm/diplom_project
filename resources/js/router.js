@@ -4,6 +4,7 @@ import Search from './components/ui/Search.vue'
 import Library from './components/tracks/Library.vue'
 import Personal from './components/auth/Personal.vue'
 import Playlist from './components/playlist/Playlist.vue'
+import Favorites from './components/playlist/Favorites.vue'
 
 const routes = [
   {
@@ -41,6 +42,11 @@ const routes = [
     name: 'playlist',
     component: Playlist,
     props: true
+  },
+  {
+    path: '/favorites',
+    name: 'favorites',
+    component: Favorites
   }
 ]
 
