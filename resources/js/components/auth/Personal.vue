@@ -18,7 +18,7 @@
         </div>
         <div class="flex items-center justify-start gap-4 py-3 px-4 text-white hover:bg-gray-200 cursor-pointer transition-colors duration-200" @click="addTrack">
             <img :src="addTrackIcon" alt="Добавить трек" class="w-5 h-5">
-            Добавить трек
+            <button class="text-white text-sm font-roboto" >Добавить трек</button>
         </div>
         <div class="flex items-center justify-start gap-4 py-3 px-4 text-white hover:bg-gray-200 cursor-pointer transition-colors duration-200" @click="deleteItem">
             <img :src="deleteItemIcon" alt="Удалить" class="w-5 h-5">
@@ -29,6 +29,24 @@
             Выйти
         </div>
     </div>
+    
+    <!-- Модальное окно для загрузки трека -->
+    <teleport to="body">
+        <div v-if="showUploadTrack" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" @click.self="closeUploadTrack">
+            <div class="bg-spotify-gray rounded-lg p-4 max-w-2xl w-full" @click.stop>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-white border-b border-spotify-green  pb-1 text-xl">Загрузка трека</h2>
+                    <button @click="closeUploadTrack" class="text-white text-xl">&times;</button>
+                </div>
+                <UploadTrack @close="closeUploadTrack" @show-toast="showToast" />
+            </div>
+        </div>
+    </teleport>
+    
+    <!-- Уведомление -->
+    <div v-if="toast.show" class="fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50" :class="toastClasses">
+        {{ toast.message }}
+    </div>
 </template>
   
 <script>
@@ -36,13 +54,34 @@ import { ref, inject, computed, onMounted } from 'vue';
 import addTrackIcon from '../../../images/add.png';
 import deleteItemIcon from '../../../images/delete.png';
 import logoutIcon from '../../../images/exit.png';
+import UploadTrack from '../tracks/UploadTrack.vue';
 import axios from 'axios';
 
 export default {
+    components: {
+        UploadTrack
+    },
     setup() {
         const isPersonalModalOpen = ref(false);
         const currentUser = inject('currentUser');
         const logoutUser = inject('logout');
+        const showUploadTrack = ref(false);
+        
+        // Состояние для уведомлений
+        const toast = ref({
+            show: false,
+            message: '',
+            type: 'success'
+        });
+        
+        // Классы для уведомлений в зависимости от типа
+        const toastClasses = computed(() => {
+            return {
+                'bg-green-500 text-white': toast.value.type === 'success',
+                'bg-red-500 text-white': toast.value.type === 'error',
+                'bg-blue-500 text-white': toast.value.type === 'info'
+            };
+        });
 
         // Отладочная информация
         onMounted(() => {
@@ -139,10 +178,28 @@ export default {
             return 'П';
         });
 
+        // Функция для отображения уведомлений
+        const showToast = ({ message, type = 'success' }) => {
+            toast.value = {
+                show: true,
+                message,
+                type
+            };
+            
+            // Автоматически скрываем уведомление через 3 секунды
+            setTimeout(() => {
+                toast.value.show = false;
+            }, 3000);
+        };
+
         // Функции компонента
         const addTrack = () => {
             console.log('Добавить трек');
-            // Здесь будет логика добавления трека
+            showUploadTrack.value = true;
+        };
+        
+        const closeUploadTrack = () => {
+            showUploadTrack.value = false;
         };
         
         const deleteItem = () => {
@@ -173,7 +230,12 @@ export default {
             userId,
             addTrack,
             deleteItem,
-            logout
+            logout,
+            showUploadTrack,
+            closeUploadTrack,
+            toast,
+            toastClasses,
+            showToast
         };
     }
 }
