@@ -21,6 +21,15 @@
                 >
             </div>
             <div>
+                <label class="block text-sm font-medium text-white">Жанр</label>
+                <input 
+                    type="text" 
+                    v-model="trackData.genre"
+                    class="mt-1 pl-2 block h-10 w-full rounded-md bg-transparent border-white border-1 text-white shadow-sm"
+                    placeholder="Укажите жанр (необязательно)"
+                >
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-white">Аудио файл</label>
                 <input 
                     type="file" 
@@ -59,14 +68,17 @@ export default {
             trackData: {
                 title: '',
                 artist: '',
+                genre: '',
                 file: null,
                 image: null,
-                
             },
             isUploading: false
         }
     },
     methods: {
+        getAuthToken() {
+            return localStorage.getItem('token');
+        },
         handleFileUpload(event) {
             this.trackData.file = event.target.files[0];
         },
@@ -83,24 +95,40 @@ export default {
             const formData = new FormData();
             formData.append('title', this.trackData.title);
             formData.append('artist', this.trackData.artist);
+            formData.append('genre', this.trackData.genre || 'Неизвестный');
             formData.append('file', this.trackData.file);
 
             try {
-                // TODO: Реализовать загрузку на сервер
+                const token = this.getAuthToken();
+                if (!token) {
+                    throw new Error('Необходима авторизация');
+                }
+
                 const response = await fetch('/api/tracks', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData,
+                    credentials: 'include'
                 });
 
-                if (response.ok) {
-                    this.$emit('show-toast', { message: 'Трек успешно загружен', type: 'success' });
-                    this.resetForm();
-                    this.$emit('close');
-                } else {
-                    throw new Error('Ошибка загрузки');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка загрузки');
                 }
+
+                console.log('Успешно загружен трек:', data);
+                this.$emit('show-toast', { message: 'Трек успешно загружен', type: 'success' });
+                this.resetForm();
+                this.$emit('close');
             } catch (error) {
-                this.$emit('show-toast', { message: 'Ошибка при загрузке трека', type: 'error' });
+                console.error('Ошибка при загрузке:', error);
+                this.$emit('show-toast', { 
+                    message: error.message || 'Ошибка при загрузке трека', 
+                    type: 'error' 
+                });
             } finally {
                 this.isUploading = false;
             }
@@ -109,6 +137,7 @@ export default {
             this.trackData = {
                 title: '',
                 artist: '',
+                genre: '',
                 file: null
             };
         }

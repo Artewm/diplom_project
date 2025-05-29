@@ -30,11 +30,10 @@ window.axios.interceptors.response.use(
             // Удаляем заголовок Authorization
             delete window.axios.defaults.headers.common['Authorization'];
             
-            // Если страница не является страницей авторизации или регистрации,
+            // Если страница не является страницей авторизации, регистрации или главной,
             // перенаправляем на главную
-            if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+            if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register') && window.location.pathname !== '/') {
                 console.log('Перенаправление на главную страницу из-за ошибки авторизации');
-                // Перезагружаем страницу после небольшой задержки
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 100);

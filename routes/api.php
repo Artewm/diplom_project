@@ -10,7 +10,22 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\FavoriteController;
 
 
-Route::apiResource('tracks', TrackController::class);
+// Защищенные маршруты для работы с треками
+Route::group([
+    'middleware' => ['api', 'auth:api']
+], function ($router) {
+    Route::get('tracks', [TrackController::class, 'index']);
+    Route::get('tracks/{track}', [TrackController::class, 'show']);
+    Route::put('tracks/{track}', [TrackController::class, 'update']);
+    Route::delete('tracks/{track}', [TrackController::class, 'destroy']);
+});
+
+// Отдельный маршрут для загрузки трека (multipart/form-data)
+Route::group([
+    'middleware' => ['auth:api']
+], function ($router) {
+    Route::post('tracks', [TrackController::class, 'store']);
+});
 
 // Публичные маршруты аутентификации
 Route::group([

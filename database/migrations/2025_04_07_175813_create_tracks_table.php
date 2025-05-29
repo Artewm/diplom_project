@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('genre');       // Жанр
             $table->string('duration');    // Длительность
             $table->string('file_path');   // Путь к аудиофайлу
+            $table->string('cover_path')->nullable(); // Путь к обложке (опционально)
             $table->timestamps();          // created_at и updated_at
         });
     }
