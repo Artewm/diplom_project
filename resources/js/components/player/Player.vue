@@ -169,10 +169,22 @@ export default {
       this.isPlaying = false
       this.currentTime = 0
       // Implement auto-next track logic if needed
+    },
+    setTrackAndPlay(track) {
+      this.currentTrack = track;
+      this.$nextTick(() => {
+        this.$refs.audioPlayer.currentTime = 0;
+        this.$refs.audioPlayer.play();
+        this.isPlaying = true;
+      });
     }
   },
   mounted() {
     this.$refs.audioPlayer.volume = this.volume / 100
+    window.emitter.on('play-track', this.setTrackAndPlay);
+  },
+  beforeUnmount() {
+    window.emitter.off('play-track', this.setTrackAndPlay);
   }
 }
 </script>

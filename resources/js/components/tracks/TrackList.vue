@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full overflow-x-auto">
+    <div class="w-full overflow-x-auto pb-20">
       <table class="min-w-full text-sm text-gray-300">
         <thead class="uppercase text-xs font-semibold border-b border-white/10">
           <tr>
@@ -36,7 +36,7 @@
             <td class="px-6 py-3">
               <div class="flex items-center min-w-0">
                 <img
-                  :src="track.image || PlayIcon"
+                  :src="track.cover_path ? '/storage/' + track.cover_path : PlayIcon"
                   :alt="track.title"
                   class="w-10 h-10 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0 p-2"
                 />
@@ -189,7 +189,10 @@ const selectedTrackId = ref(null)
 const showCreatePlaylistModal = ref(false)
   
 const playTrack = (track) => {
-  console.log('Playing track:', track.title)
+  window.emitter.emit('play-track', {
+    ...track,
+    url: '/storage/' + track.file_path
+  });
 }
 
 const removeTrackFromPlaylist = (trackId) => {
@@ -233,11 +236,14 @@ const onPlaylistCreated = (playlist) => {
   router.push({ name: 'playlist', params: { id: playlist.id } })
 }
   
-const formatDuration = (seconds) => {
-  if (!seconds) return '0:00'
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+const formatDuration = (duration) => {
+  if (!duration) return '0:00';
+  if (typeof duration === 'string' && duration.includes(':')) return duration;
+  const seconds = Number(duration);
+  if (isNaN(seconds)) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 // Отладочный вывод полученных свойств при изменении

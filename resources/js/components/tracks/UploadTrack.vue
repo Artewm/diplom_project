@@ -39,6 +39,15 @@
                     required
                 >
             </div>
+            <div>
+                <label class="block text-sm font-medium text-white">Обложка (необязательно)</label>
+                <input 
+                    type="file" 
+                    @change="handleImageUpload"
+                    accept="image/*"
+                    class="mt-1 block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                >
+            </div>
             <div class="flex gap-2">
                 <button 
                     type="submit"
@@ -82,6 +91,9 @@ export default {
         handleFileUpload(event) {
             this.trackData.file = event.target.files[0];
         },
+        handleImageUpload(event) {
+            this.trackData.image = event.target.files[0];
+        },
         closeModal() {
             this.$emit('close');
         },
@@ -97,6 +109,9 @@ export default {
             formData.append('artist', this.trackData.artist);
             formData.append('genre', this.trackData.genre || 'Неизвестный');
             formData.append('file', this.trackData.file);
+            if (this.trackData.image) {
+                formData.append('image', this.trackData.image);
+            }
 
             try {
                 const token = this.getAuthToken();
@@ -138,7 +153,8 @@ export default {
                 title: '',
                 artist: '',
                 genre: '',
-                file: null
+                file: null,
+                image: null
             };
         }
     }

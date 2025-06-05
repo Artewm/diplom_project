@@ -56,19 +56,19 @@ class TrackController extends Controller
 
             // Генерация безопасного имени файла
             $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9.]/', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('public/tracks', $fileName);
-
-            if (!$filePath) {
-                \Log::error('Не удалось сохранить файл');
+            $fileFullPath = storage_path('app/public/tracks/' . $fileName);
+            if (!$file->move(storage_path('app/public/tracks'), $fileName)) {
+                \Log::error('Не удалось сохранить файл (move)');
                 return response()->json(['error' => 'Не удалось сохранить файл'], 500);
             }
+            $filePath = 'tracks/' . $fileName;
 
             \Log::info('Файл успешно сохранен', ['path' => $filePath]);
 
             // === Расчет длительности трека ===
             require_once base_path('vendor/james-heinrich/getid3/getid3/getid3.php');
             $getID3 = new \getID3();
-            $audio = $getID3->analyze(storage_path('app/public/' . $fileName));
+            $audio = $getID3->analyze($fileFullPath);
             $duration = isset($audio['playtime_seconds']) ? $audio['playtime_seconds'] : 0;
             $durationFormatted = '0:00';
             if ($duration > 0) {
@@ -78,13 +78,29 @@ class TrackController extends Controller
             }
             // === конец расчета ===
 
+            // === Обработка обложки ===
+            $coverPath = 'images/baseMusic.png'; // дефолт
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                if ($image->isValid()) {
+                    $imageName = time() . '_' . preg_replace('/[^a-zA-Z0-9.]/', '_', $image->getClientOriginalName());
+                    if (!$image->move(storage_path('app/public/covers'), $imageName)) {
+                        \Log::error('Не удалось сохранить обложку (move)');
+                    } else {
+                        $coverPath = 'covers/' . $imageName;
+                    }
+                }
+            }
+            // === конец обработки обложки ===
+
             // Создание записи в БД
             $track = Track::create([
                 'title' => $request->title,
                 'artist' => $request->artist,
                 'genre' => $request->genre ?? 'Неизвестный',
                 'duration' => $durationFormatted,
-                'file_path' => str_replace('public/', '', $filePath)
+                'file_path' => $filePath,
+                'cover_path' => $coverPath
             ]);
 
             \Log::info('Трек успешно создан', ['track_id' => $track->id]);
