@@ -4,7 +4,7 @@
       <!-- Track Info -->
       <div class="flex items-center min-w-[180px] w-[30%]">
         <img 
-          :src="currentTrack.image || 'https://via.placeholder.com/56'" 
+          :src="currentTrack.cover_path ? '/storage/' + currentTrack.cover_path : baseMusic" 
           :alt="currentTrack.title"
           class="h-14 w-14 rounded shadow mr-3"
         />
@@ -22,59 +22,49 @@
       <!-- Player Controls -->
       <div class="flex flex-col items-center max-w-[722px] w-[40%]">
         <div class="flex items-center space-x-4 mb-1">
-          <button class="text-gray-400 hover:text-white">
+          <button class="text-gray-400 hover:text-white" @click="previousTrack">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 3v18M18 3v18"/>
             </svg>
           </button>
-          <button class="text-gray-400 hover:text-white">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 5L5 12l14 7V5z" transform="rotate(180 12 12)"/>
-            </svg>
+          <button class="text-gray-400 hover:text-white" @click="previousTrack">
+            <img :src="nextTrack" alt="nextTrack" class="w-5 h-5 rotate-180">
           </button>
-          <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:scale-105">
-            <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+          <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:scale-105" @click="togglePlay">
+            <svg v-if="!isPlaying" class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
-          </button>
-          <button class="text-gray-400 hover:text-white">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M5 5v14l11-7z"/>
+            <svg v-else class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="6" y="5" width="4" height="14"/>
+              <rect x="14" y="5" width="4" height="14"/>
             </svg>
           </button>
-          <button class="text-gray-400 hover:text-white">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.001 12a5 5 0 0 1-9.999 0 5 5 0 0 1 9.999 0Z"/>
-            </svg>
+          <button class="text-gray-400 hover:text-white" @click="nextTrack">
+            <img :src="nextTrack" alt="nextTrack" class="w-5 h-5">
           </button>
         </div>
         
         <div class="flex items-center w-full space-x-2">
-          <span class="text-xs text-gray-400 w-10 text-right">0:00</span>
-          <div class="flex-1 h-1 bg-gray-600 rounded-full">
-            <div class="h-full w-0 bg-white rounded-full relative">
+          <span class="text-xs text-gray-400 w-10 text-right">{{ formatTime(currentTime) }}</span>
+          <div class="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group" @click="seek">
+            <div class="h-full bg-white rounded-full relative" :style="{ width: progress + '%' }">
               <div class="absolute -right-2 -top-2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100"></div>
             </div>
           </div>
-          <span class="text-xs text-gray-400 w-10">0:00</span>
+          <span class="text-xs text-gray-400 w-10">{{ formatTime(duration) }}</span>
         </div>
       </div>
 
       <!-- Volume Controls -->
       <div class="flex items-center justify-end min-w-[180px] w-[30%] space-x-3">
-        <button class="text-gray-400 hover:text-white">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M9 6l6 6-6 6"/>
-          </svg>
-        </button>
-        <button class="text-gray-400 hover:text-white">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.625l4.5 4.5-4.5 4.5v-9Z"/>
-          </svg>
+        <button class="text-gray-400 hover:text-white" @click="toggleMute">
+          <img :src="volumeIcon" alt="volumeIcon" class="w-5 h-5">
         </button>
         <div class="w-24">
-          <div class="h-1 bg-gray-600 rounded-full">
-            <div class="h-full w-1/2 bg-white rounded-full relative group">
+          <div class="h-1 bg-gray-600 rounded-full cursor-pointer" 
+               @click="adjustVolume"
+               @mousedown="startVolumeDrag">
+            <div class="h-full bg-white rounded-full relative group" :style="{ width: volume + '%' }">
               <div class="absolute -right-2 -top-2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100"></div>
             </div>
           </div>
@@ -93,6 +83,12 @@
 </template>
 
 <script>
+import { ref, onMounted, computed, watch, inject } from 'vue'
+import nextTrack from '../../../images/arrowNext.png'
+import maxVolume from '../../../images/maxVolume.png'
+import minVolume from '../../../images/lowVolume.png'
+import mutt from '../../../images/mutt.png'
+import baseMusic from '../../../images/baseMusic.png'
 export default {
   name: 'Player',
   // Состояние плеера
@@ -103,18 +99,28 @@ export default {
       duration: 0, // Длительность трека
       volume: 70, // Громкость (0-100)
       previousVolume: 70, // Сохраненная громкость для восстановления после мута
+      nextTrack: nextTrack,
+      maxVolume: maxVolume,
+      minVolume: minVolume,
+      mutt: mutt,
       currentTrack: {
         title: '',
         artist: '',
-        image: '',
+        cover_path: '',
         url: ''
-      }
+      },
+      volumeBarRef: null, // ссылка на элемент полосы громкости
     }
   },
   // Вычисляемые свойства
   computed: {
     progress() {
       return this.duration ? (this.currentTime / this.duration) * 100 : 0
+    },
+    volumeIcon() {
+      if (this.volume === 0) return this.mutt;
+      if (this.volume > 50) return this.maxVolume;
+      return this.minVolume;
     }
   },
   // Методы управления плеером
@@ -144,11 +150,15 @@ export default {
       this.currentTime = this.duration * percent
       this.$refs.audioPlayer.currentTime = this.currentTime
     },
-    adjustVolume(event) {
-      const rect = event.currentTarget.getBoundingClientRect()
-      const percent = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100))
-      this.volume = percent
-      this.$refs.audioPlayer.volume = percent / 100
+    adjustVolume(event, el = null) {
+      // el — это элемент полосы громкости, если передан явно
+      const bar = el || event.currentTarget || this.volumeBarRef;
+      if (!bar) return;
+      const rect = bar.getBoundingClientRect();
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const percent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+      this.volume = percent;
+      this.$refs.audioPlayer.volume = percent / 100;
     },
     toggleMute() {
       if (this.volume > 0) {
@@ -162,9 +172,6 @@ export default {
     previousTrack() {
       // Implement previous track logic
     },
-    nextTrack() {
-      // Implement next track logic
-    },
     onTrackEnded() {
       this.isPlaying = false
       this.currentTime = 0
@@ -177,6 +184,21 @@ export default {
         this.$refs.audioPlayer.play();
         this.isPlaying = true;
       });
+    },
+    startVolumeDrag(event) {
+      // Сохраняем ссылку на элемент полосы громкости
+      this.volumeBarRef = event.currentTarget;
+      this.adjustVolume(event, this.volumeBarRef);
+      document.addEventListener('mousemove', this.onVolumeDrag);
+      document.addEventListener('mouseup', this.stopVolumeDrag);
+    },
+    onVolumeDrag(event) {
+      this.adjustVolume(event, this.volumeBarRef);
+    },
+    stopVolumeDrag() {
+      document.removeEventListener('mousemove', this.onVolumeDrag);
+      document.removeEventListener('mouseup', this.stopVolumeDrag);
+      this.volumeBarRef = null;
     }
   },
   mounted() {

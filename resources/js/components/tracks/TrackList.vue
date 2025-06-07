@@ -38,7 +38,7 @@
                 <img
                   :src="track.cover_path ? '/storage/' + track.cover_path : PlayIcon"
                   :alt="track.title"
-                  class="w-10 h-10 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0 p-2"
+                  class="w-12 h-12 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0 "
                 />
                 <div class="text-white font-medium truncate">
                   {{ track.title }}
