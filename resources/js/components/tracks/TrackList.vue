@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full overflow-x-auto pb-20">
+    <div :class="['overflow-x-auto pb-20', $attrs.class]">
       <table class="min-w-full text-sm text-gray-300">
         <thead class="uppercase text-xs font-semibold border-b border-white/10">
           <tr>
@@ -189,9 +189,14 @@ const selectedTrackId = ref(null)
 const showCreatePlaylistModal = ref(false)
   
 const playTrack = (track) => {
+  const index = props.tracks.findIndex(t => t.id === track.id);
+  const playlistTracks = props.tracks.map(t => ({
+    ...t,
+    url: '/storage/' + t.file_path
+  }));
   window.emitter.emit('play-track', {
-    ...track,
-    url: '/storage/' + track.file_path
+    playlistTracks,
+    index
   });
 }
 
@@ -258,6 +263,8 @@ watch(() => props.favorites, (newFavorites) => {
 watch(() => props.showRemoveFromFavorites, (value) => {
   console.log('TrackList showRemoveFromFavorites:', value);
 }, { immediate: true });
+
+defineOptions({ inheritAttrs: false })
 </script>
   
 <style scoped>

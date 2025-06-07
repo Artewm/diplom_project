@@ -12,8 +12,8 @@
           <h4 class="text-sm text-white font-medium truncate">{{ currentTrack.title || 'Не выбран трек' }}</h4>
           <p class="text-xs text-gray-400 truncate">{{ currentTrack.artist || 'Неизвестный исполнитель' }}</p>
         </div>
-        <button class="text-gray-400 hover:text-white">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button class="text-gray-400 hover:text-white" @click="toggleFavorite">
+          <svg :class="[{ 'heart-animate': heartAnimate }]" class="w-5 h-5" :fill="isCurrentTrackFavorite ? '#ef4444' : 'none'" :stroke="isCurrentTrackFavorite ? '#ef4444' : 'currentColor'" viewBox="0 0 24 24" @animationend="heartAnimate = false">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
           </svg>
         </button>
@@ -39,7 +39,7 @@
               <rect x="14" y="5" width="4" height="14"/>
             </svg>
           </button>
-          <button class="text-gray-400 hover:text-white" @click="nextTrack">
+          <button class="text-gray-400 hover:text-white" @click="nextTrackHandler">
             <img :src="nextTrack" alt="nextTrack" class="w-5 h-5">
           </button>
         </div>
@@ -110,6 +110,10 @@ export default {
         url: ''
       },
       volumeBarRef: null, // ссылка на элемент полосы громкости
+      playlistTracks: [], // массив треков плейлиста
+      currentTrackIndex: -1, // индекс текущего трека
+      favoriteTrackIds: [], // id избранных треков
+      heartAnimate: false,
     }
   },
   // Вычисляемые свойства
@@ -121,6 +125,9 @@ export default {
       if (this.volume === 0) return this.mutt;
       if (this.volume > 50) return this.maxVolume;
       return this.minVolume;
+    },
+    isCurrentTrackFavorite() {
+      return this.favoriteTrackIds.includes(this.currentTrack.id);
     }
   },
   // Методы управления плеером
@@ -170,20 +177,61 @@ export default {
       this.$refs.audioPlayer.volume = this.volume / 100
     },
     previousTrack() {
-      // Implement previous track logic
+      if (this.playlistTracks.length > 0) {
+        if (this.currentTrackIndex > 0) {
+          this.setTrackByIndex(this.currentTrackIndex - 1);
+        } else {
+          // если нет предыдущего — включаем последний
+          this.setTrackByIndex(this.playlistTracks.length - 1);
+        }
+      }
+    },
+    nextTrackHandler() {
+      if (this.playlistTracks.length > 0) {
+        if (this.currentTrackIndex < this.playlistTracks.length - 1) {
+          this.setTrackByIndex(this.currentTrackIndex + 1);
+        } else {
+          // если нет следующего — включаем первый
+          this.setTrackByIndex(0);
+        }
+      }
+    },
+    setTrackByIndex(index) {
+      const track = this.playlistTracks[index];
+      if (track) {
+        this.currentTrack = track;
+        this.currentTrackIndex = index;
+        this.$nextTick(() => {
+          this.$refs.audioPlayer.currentTime = 0;
+          this.$refs.audioPlayer.play();
+          this.isPlaying = true;
+        });
+      }
+    },
+    setTrackAndPlay(payload) {
+      // payload может быть треком или { track, playlistTracks, index }
+      if (payload && Array.isArray(payload.playlistTracks)) {
+        this.playlistTracks = payload.playlistTracks;
+        this.currentTrackIndex = payload.index ?? 0;
+        this.setTrackByIndex(this.currentTrackIndex);
+      } else {
+        this.currentTrack = payload;
+        this.playlistTracks = [];
+        this.currentTrackIndex = -1;
+        this.$nextTick(() => {
+          this.$refs.audioPlayer.currentTime = 0;
+          this.$refs.audioPlayer.play();
+          this.isPlaying = true;
+        });
+      }
     },
     onTrackEnded() {
-      this.isPlaying = false
-      this.currentTime = 0
-      // Implement auto-next track logic if needed
-    },
-    setTrackAndPlay(track) {
-      this.currentTrack = track;
-      this.$nextTick(() => {
-        this.$refs.audioPlayer.currentTime = 0;
-        this.$refs.audioPlayer.play();
-        this.isPlaying = true;
-      });
+      this.isPlaying = false;
+      this.currentTime = 0;
+      // Автоматически следующий трек
+      if (this.playlistTracks.length > 0 && this.currentTrackIndex < this.playlistTracks.length - 1) {
+        this.setTrackByIndex(this.currentTrackIndex + 1);
+      }
     },
     startVolumeDrag(event) {
       // Сохраняем ссылку на элемент полосы громкости
@@ -199,11 +247,50 @@ export default {
       document.removeEventListener('mousemove', this.onVolumeDrag);
       document.removeEventListener('mouseup', this.stopVolumeDrag);
       this.volumeBarRef = null;
-    }
+    },
+    async fetchFavorites() {
+      try {
+        const response = await fetch('/api/favorites', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        this.favoriteTrackIds = Array.isArray(data) ? data.map(t => t.id) : [];
+      } catch (e) {
+        this.favoriteTrackIds = [];
+      }
+    },
+    async toggleFavorite() {
+      this.heartAnimate = false;
+      void this.$nextTick(() => { this.heartAnimate = true })
+      const id = this.currentTrack.id;
+      if (!id) return;
+      if (this.isCurrentTrackFavorite) {
+        // удалить из избранного
+        await fetch(`/api/favorites/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        this.favoriteTrackIds = this.favoriteTrackIds.filter(favId => favId !== id);
+      } else {
+        // добавить в избранное
+        await fetch(`/api/favorites/${id}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        this.favoriteTrackIds.push(id);
+      }
+    },
   },
   mounted() {
     this.$refs.audioPlayer.volume = this.volume / 100
     window.emitter.on('play-track', this.setTrackAndPlay);
+    this.fetchFavorites();
   },
   beforeUnmount() {
     window.emitter.off('play-track', this.setTrackAndPlay);
@@ -214,5 +301,13 @@ export default {
 <style scoped>
 .group:hover .group-hover\:bg-\[\#1db954\] {
   background-color: #1db954;
+}
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.heart-animate {
+  animation: heart-pop 0.3s cubic-bezier(.4,2,.6,1) forwards;
 }
 </style> 
