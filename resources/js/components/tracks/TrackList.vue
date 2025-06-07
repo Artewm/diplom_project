@@ -11,7 +11,7 @@
                 <img :src="durationIcon" alt="duration" class="w-4 h-4">
               </div>
             </th>
-            <th class="px-6 py-3 text-right w-16"></th>
+            <th v-if="canRemoveTracks" class="px-6 py-3 text-right w-16">Действия</th>
             <th v-if="isPlaylist && canRemoveTracks" class="px-6 py-3 text-right w-16">Действия</th>
           </tr>
         </thead>
@@ -106,11 +106,11 @@
             </td>
             
             <!-- Кнопка удаления трека (отдельная колонка) -->
-            <td v-if="isPlaylist && canRemoveTracks" class="px-6 py-3 text-center text-gray-400">
+            <td v-if="canRemoveTracks" class="px-6 py-3 text-center text-gray-400">
               <button 
-                @click="removeTrackFromPlaylist(track.id)" 
+                @click="$emit('remove-track', track.id)" 
                 class="hover:text-red-500 transition-colors duration-200 px-2 py-1 rounded-md bg-red-500 bg-opacity-20 hover:bg-opacity-30"
-                title="Удалить трек из плейлиста">
+                title="Удалить трек">
                 <img :src="deleteIcon" alt="delete" class="w-5 h-5">
               </button>
             </td>

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tracks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // владелец трека
             $table->string('title');       // Название трека
             $table->string('artist');      // Исполнитель
             $table->string('genre');       // Жанр

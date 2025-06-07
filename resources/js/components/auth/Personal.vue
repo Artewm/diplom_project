@@ -38,7 +38,7 @@
                     <h2 class="text-white border-b border-spotify-green  pb-1 text-xl">Загрузка трека</h2>
                     <button @click="closeUploadTrack" class="text-white text-xl">&times;</button>
                 </div>
-                <UploadTrack @close="closeUploadTrack" @show-toast="showToast" />
+                <UploadTrack @close="closeUploadTrack" @show-toast="showToast" @track-added="onTrackAdded" />
             </div>
         </div>
     </teleport>
@@ -47,25 +47,56 @@
     <div v-if="toast.show" class="fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50" :class="toastClasses">
         {{ toast.message }}
     </div>
+    
+    <!-- Модальное окно для удаления треков -->
+    <teleport to="body">
+        <div v-if="showDeleteTracksModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" @click.self="closeDeleteTracksModal">
+            <div class="bg-spotify-gray rounded-lg p-6 w-[90vw] max-w-[900px] overflow-x-hidden" @click.stop>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-white border-b border-spotify-green pb-1 text-xl">Удаление треков</h2>
+                    <button @click="closeDeleteTracksModal" class="text-white text-xl">&times;</button>
+                </div>
+                <div v-if="loadingUserTracks" class="flex justify-center items-center h-32">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green"></div>
+                </div>
+                <div v-else>
+                    <div style="overflow-x:auto; overflow-y:auto; min-width:600px; max-height:60vh;">
+                        <TrackList
+                            :tracks="userTracks"
+                            :canRemoveTracks="true"
+                            @remove-track="handleRemoveTrack"
+                        />
+                    </div>
+                    <div v-if="userTracks.length === 0" class="text-gray-400 text-center py-4">У вас нет загруженных треков</div>
+                </div>
+            </div>
+        </div>
+    </teleport>
 </template>
   
 <script>
-import { ref, inject, computed, onMounted } from 'vue';
+import { ref, inject, computed, onMounted, shallowRef } from 'vue';
 import addTrackIcon from '../../../images/add.png';
 import deleteItemIcon from '../../../images/delete.png';
 import logoutIcon from '../../../images/exit.png';
 import UploadTrack from '../tracks/UploadTrack.vue';
 import axios from 'axios';
+import TrackList from '../tracks/TrackList.vue';
+import mitt from 'mitt';
 
 export default {
     components: {
-        UploadTrack
+        UploadTrack,
+        TrackList
     },
     setup() {
         const isPersonalModalOpen = ref(false);
         const currentUser = inject('currentUser');
         const logoutUser = inject('logout');
         const showUploadTrack = ref(false);
+        const showDeleteTracksModal = ref(false);
+        const userTracks = shallowRef([]);
+        const loadingUserTracks = ref(false);
         
         // Состояние для уведомлений
         const toast = ref({
@@ -83,6 +114,9 @@ export default {
             };
         });
 
+        // Глобальный emitter (если не создан)
+        const emitter = window.emitter || (window.emitter = mitt());
+
         // Отладочная информация
         onMounted(() => {
             console.log('Personal.vue mounted, currentUser:', currentUser.value);
@@ -93,6 +127,8 @@ export default {
                 console.log('ID:', currentUser.value.sub || 'Не указан');
             }
             fetchUserDetails();
+            emitter.on('user-track-added', loadUserTracks);
+            emitter.on('user-track-removed', loadUserTracks);
         });
 
         // Состояние для хранения дополнительной информации о пользователе
@@ -192,19 +228,26 @@ export default {
             }, 3000);
         };
 
+        // Загружаем треки пользователя при открытии модального окна
+        const openDeleteTracksModal = async () => {
+            showDeleteTracksModal.value = true;
+            await loadUserTracks();
+        };
+
         // Функции компонента
-        const addTrack = () => {
+        const addTrack = async () => {
             console.log('Добавить трек');
             showUploadTrack.value = true;
+            await loadUserTracks(); // обновляем список треков при открытии модалки
         };
         
-        const closeUploadTrack = () => {
+        const closeUploadTrack = async () => {
             showUploadTrack.value = false;
+            await loadUserTracks(); // обновляем после закрытия модалки
         };
         
-        const deleteItem = () => {
-            console.log('Удалить');
-            // Здесь будет логика удаления элемента
+        const deleteItem = async () => {
+            await openDeleteTracksModal();
         };
         
         const logout = async () => {
@@ -216,6 +259,46 @@ export default {
             } catch (error) {
                 console.error('Ошибка при выходе:', error);
             }
+        };
+
+        const loadUserTracks = async () => {
+            loadingUserTracks.value = true;
+            try {
+                const userId = currentUser.value?.sub || currentUser.value?.id;
+                const isAdmin = currentUser.value?.email === 'admin@test.com';
+                const response = await axios.get('/api/tracks');
+                console.log('userTracks (raw):', response.data, 'userId:', userId, 'currentUser:', currentUser.value);
+                userTracks.value = isAdmin
+                    ? response.data // админ видит все треки
+                    : response.data.filter(track => track.user_id == userId);
+                console.log('userTracks (filtered):', userTracks.value);
+            } catch (e) {
+                userTracks.value = [];
+            } finally {
+                loadingUserTracks.value = false;
+            }
+        };
+
+        const handleRemoveTrack = async (trackId) => {
+            if (!confirm('Вы действительно хотите удалить этот трек?')) return;
+            try {
+                await axios.delete(`/api/tracks/${trackId}`);
+                showToast({ message: 'Трек удалён', type: 'success' });
+                emitter.emit('user-track-removed', trackId); // событие удаления
+                await loadUserTracks(); // обновляем после удаления
+            } catch (e) {
+                showToast({ message: 'Ошибка при удалении трека', type: 'error' });
+            }
+        };
+
+        const closeDeleteTracksModal = () => {
+            showDeleteTracksModal.value = false;
+        };
+
+        // Обновление списка треков после добавления
+        const onTrackAdded = async () => {
+            emitter.emit('user-track-added'); // событие добавления
+            await loadUserTracks(); // обновляем после добавления
         };
 
         return {
@@ -235,7 +318,14 @@ export default {
             closeUploadTrack,
             toast,
             toastClasses,
-            showToast
+            showToast,
+            showDeleteTracksModal,
+            closeDeleteTracksModal,
+            userTracks,
+            loadingUserTracks,
+            handleRemoveTrack,
+            onTrackAdded,
+            openDeleteTracksModal // экспортируем новую функцию
         };
     }
 }

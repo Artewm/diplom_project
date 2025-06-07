@@ -46,7 +46,9 @@
         
         <div class="flex items-center w-full space-x-2">
           <span class="text-xs text-gray-400 w-10 text-right">{{ formatTime(currentTime) }}</span>
-          <div class="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group" @click="seek">
+          <div class="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group"
+               @click="seek"
+               @mousedown="startSeekDrag">
             <div class="h-full bg-white rounded-full relative" :style="{ width: progress + '%' }">
               <div class="absolute -right-2 -top-2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100"></div>
             </div>
@@ -114,6 +116,12 @@ export default {
       currentTrackIndex: -1, // индекс текущего трека
       favoriteTrackIds: [], // id избранных треков
       heartAnimate: false,
+      baseMusic: baseMusic,
+      seekBarRef: null,
+      isSeeking: false,
+      _boundOnSeekDrag: null,
+      _boundStopSeekDrag: null,
+      wasPlaying: false,
     }
   },
   // Вычисляемые свойства
@@ -146,7 +154,9 @@ export default {
       return `${mins}:${secs.toString().padStart(2, '0')}`
     },
     onTimeUpdate() {
-      this.currentTime = this.$refs.audioPlayer.currentTime
+      if (!this.isSeeking) {
+        this.currentTime = this.$refs.audioPlayer.currentTime
+      }
     },
     onLoadedMetadata() {
       this.duration = this.$refs.audioPlayer.duration
@@ -248,7 +258,44 @@ export default {
       document.removeEventListener('mouseup', this.stopVolumeDrag);
       this.volumeBarRef = null;
     },
+    startSeekDrag(event) {
+      this.isSeeking = true;
+      this.seekBarRef = event.currentTarget;
+      this.wasPlaying = !this.$refs.audioPlayer.paused;
+      this.onSeekDrag(event);
+      if (!this._boundOnSeekDrag) this._boundOnSeekDrag = (e) => this.onSeekDrag(e);
+      if (!this._boundStopSeekDrag) this._boundStopSeekDrag = (e) => this.stopSeekDrag(e);
+      document.addEventListener('mousemove', this._boundOnSeekDrag);
+      document.addEventListener('mouseup', this._boundStopSeekDrag);
+    },
+    onSeekDrag(event) {
+      if (!this.isSeeking || !this.seekBarRef) return;
+      const rect = this.seekBarRef.getBoundingClientRect();
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      let percent = (clientX - rect.left) / rect.width;
+      percent = Math.max(0, Math.min(1, percent));
+      this.currentTime = this.duration * percent;
+    },
+    stopSeekDrag() {
+      this.isSeeking = false;
+      this.seekBarRef = null;
+      if (this._boundOnSeekDrag) document.removeEventListener('mousemove', this._boundOnSeekDrag);
+      if (this._boundStopSeekDrag) document.removeEventListener('mouseup', this._boundStopSeekDrag);
+      // После завершения drag выставляем точное время
+      this.$refs.audioPlayer.currentTime = this.currentTime;
+      // Синхронизируем визуальный прогресс
+      this.currentTime = this.$refs.audioPlayer.currentTime;
+      if (this.wasPlaying) {
+        this.$refs.audioPlayer.play();
+      } else {
+        this.$refs.audioPlayer.pause();
+      }
+    },
     async fetchFavorites() {
+      if (!localStorage.getItem('token')) {
+        this.favoriteTrackIds = [];
+        return;
+      }
       try {
         const response = await fetch('/api/favorites', {
           headers: {

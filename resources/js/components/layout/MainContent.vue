@@ -137,12 +137,16 @@ watch(isAuthenticated, (newValue) => {
 onMounted(async () => {
   document.addEventListener('click', closeMenuOnClickOutside)
   
-  try {
-    const response = await axios.get('/api/tracks')
-    tracks.value = response.data
-  } catch (error) {
-    console.error('Ошибка при загрузке треков:', error)
+  const loadTracks = async () => {
+    try {
+      const response = await axios.get('/api/tracks')
+      tracks.value = response.data
+    } catch (error) {
+      console.error('Ошибка при загрузке треков:', error)
+    }
   }
+
+  await loadTracks()
   
   // Загружаем избранные треки
   if (isAuthenticated.value) {
@@ -157,6 +161,11 @@ onMounted(async () => {
   emitter.on('favorite-removed', (trackId) => {
     favorites.value = favorites.value.filter(track => track.id !== trackId)
   })
+
+  // Подписка на добавление трека
+  emitter.on('user-track-added', loadTracks)
+  // Подписка на удаление трека
+  emitter.on('user-track-removed', loadTracks)
 })
 </script>
 
@@ -218,7 +227,7 @@ onMounted(async () => {
       <TrackList 
         :tracks="tracks" 
         :favorites="favorites" 
-        :showAddToFavorites="isAuthenticated" 
+        :showAddToFavorites="isAuthenticated ? true : false" 
         :showRemoveFromFavorites="false"
         @add-to-favorites="addToFavorites" 
       />

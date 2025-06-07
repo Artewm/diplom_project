@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Track extends Model
 {
@@ -14,7 +15,8 @@ class Track extends Model
         'genre',
         'duration',
         'file_path',
-        'cover_path'
+        'cover_path',
+        'user_id',
     ];
 
     public function favorites()
@@ -27,5 +29,8 @@ class Track extends Model
         return $this->belongsToMany(User::class, 'favorites');
     }
 
-   
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

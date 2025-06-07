@@ -22,12 +22,18 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-white">Жанр</label>
-                <input 
-                    type="text" 
+                <select
                     v-model="trackData.genre"
-                    class="mt-1 pl-2 block h-10 w-full rounded-md bg-transparent border-white border-1 text-white shadow-sm"
-                    placeholder="Укажите жанр (необязательно)"
+                    class="mt-1 pl-2 block h-10 w-full rounded-md bg-transparent border-white border-1 text-white shadow-sm bg-spotify-gray"
+                    required
                 >
+                    <option value="" disabled class="text-white bg-spotify-gray">Выберите жанр</option>
+                    <option value="Поп" class="text-white bg-spotify-gray hover:bg-spotify-green">Поп</option>
+                    <option value="Хип-хоп" class="text-white bg-spotify-gray hover:bg-spotify-green">Хип-хоп</option>
+                    <option value="Рок" class="text-white bg-spotify-gray hover:bg-spotify-green">Рок</option>
+                    <option value="Электронная" class="text-white bg-spotify-gray hover:bg-spotify-green">Электронная</option>
+                    <option value="Джаз" class="text-white bg-spotify-gray hover:bg-spotify-green">Джаз</option>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-white">Аудио файл</label>
@@ -71,7 +77,7 @@
 <script>
 export default {
     name: 'UploadTrack',
-    emits: ['close', 'show-toast'],
+    emits: ['close', 'show-toast', 'track-added'],
     data() {
         return {
             trackData: {
@@ -137,6 +143,7 @@ export default {
                 console.log('Успешно загружен трек:', data);
                 this.$emit('show-toast', { message: 'Трек успешно загружен', type: 'success' });
                 this.resetForm();
+                this.$emit('track-added');
                 this.$emit('close');
             } catch (error) {
                 console.error('Ошибка при загрузке:', error);

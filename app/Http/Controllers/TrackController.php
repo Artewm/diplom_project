@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Track;
 use Illuminate\Http\Request;
 use getID3;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class TrackController extends Controller
 {
@@ -22,6 +23,8 @@ class TrackController extends Controller
             \Log::info('DEBUG: Весь запрос', $request->all());
             \Log::info('DEBUG: Файл file', ['file' => $request->file('file')]);
             
+            $user = \Tymon\JWTAuth\Facades\JWTAuth::parseToken()->authenticate();
+
             // Проверяем наличие файла
             if (!$request->hasFile('file')) {
                 \Log::error('Файл не найден в запросе');
@@ -100,7 +103,8 @@ class TrackController extends Controller
                 'genre' => $request->genre ?? 'Неизвестный',
                 'duration' => $durationFormatted,
                 'file_path' => $filePath,
-                'cover_path' => $coverPath
+                'cover_path' => $coverPath,
+                'user_id' => $user->id
             ]);
 
             \Log::info('Трек успешно создан', ['track_id' => $track->id]);
@@ -133,7 +137,15 @@ class TrackController extends Controller
     // Удалить трек
     public function destroy($id)
     {
-        Track::findOrFail($id)->delete();
+        $user = JWTAuth::parseToken()->authenticate();
+        $track = Track::findOrFail($id);
+        // Только admin может удалять любые треки, остальные — только свои (если есть user_id у трека)
+        if ($user->role !== 'admin') {
+            if (isset($track->user_id) && $track->user_id !== $user->id) {
+                return response()->json(['error' => 'Нет прав на удаление этого трека'], 403);
+            }
+        }
+        $track->delete();
         return response()->json(null, 204);
     }
 }
