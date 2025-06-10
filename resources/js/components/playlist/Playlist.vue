@@ -202,10 +202,23 @@ export default {
     
     // Вычисляемое значение для общей длительности плейлиста
     const totalDuration = computed(() => {
-      const seconds = tracks.value.reduce((total, track) => total + (track.duration || 0), 0);
+      const seconds = tracks.value.reduce((total, track) => {
+        let dur = track.duration;
+        if (typeof dur === 'string') {
+          if (dur.includes(':')) {
+            // формат mm:ss
+            const [min, sec] = dur.split(':').map(Number);
+            dur = min * 60 + sec;
+          } else {
+            dur = parseInt(dur, 10);
+          }
+        }
+        if (isNaN(dur) || dur == null) dur = 0;
+        return total + dur;
+      }, 0);
       const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+      const secs = seconds % 60;
+      return `${minutes}:${secs.toString().padStart(2, '0')}`;
     });
     
     // Проверка, является ли текущий пользователь владельцем плейлиста
