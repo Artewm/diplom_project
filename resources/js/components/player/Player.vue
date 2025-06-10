@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch, inject } from 'vue'
+import { ref, onMounted, computed, watch, inject, toRef, provide } from 'vue'
 import nextTrack from '../../../images/arrowNext.png'
 import maxVolume from '../../../images/maxVolume.png'
 import minVolume from '../../../images/lowVolume.png'
@@ -211,6 +211,7 @@ export default {
       if (track) {
         this.currentTrack = track;
         this.currentTrackIndex = index;
+        window.emitter.emit('current-track-changed', this.currentTrack);
         this.$nextTick(() => {
           this.$refs.audioPlayer.currentTime = 0;
           this.$refs.audioPlayer.play();
@@ -228,6 +229,7 @@ export default {
         this.currentTrack = payload;
         this.playlistTracks = [];
         this.currentTrackIndex = -1;
+        window.emitter.emit('current-track-changed', this.currentTrack);
         this.$nextTick(() => {
           this.$refs.audioPlayer.currentTime = 0;
           this.$refs.audioPlayer.play();
@@ -338,6 +340,7 @@ export default {
     this.$refs.audioPlayer.volume = this.volume / 100
     window.emitter.on('play-track', this.setTrackAndPlay);
     this.fetchFavorites();
+    provide('playerCurrentTrack', toRef(this, 'currentTrack'));
   },
   beforeUnmount() {
     window.emitter.off('play-track', this.setTrackAndPlay);

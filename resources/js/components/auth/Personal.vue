@@ -51,7 +51,7 @@
     <!-- Модальное окно для удаления треков -->
     <teleport to="body">
         <div v-if="showDeleteTracksModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" @click.self="closeDeleteTracksModal">
-            <div class="bg-spotify-gray rounded-lg p-6 w-[90vw] max-w-[900px] overflow-x-hidden" @click.stop>
+            <div class="bg-spotify-gray rounded-lg p-8 w-[98vw] max-w-[1400px] min-h-[500px] overflow-x-auto" @click.stop>
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-white border-b border-spotify-green pb-1 text-xl">Удаление треков</h2>
                     <button @click="closeDeleteTracksModal" class="text-white text-xl">&times;</button>
@@ -60,7 +60,7 @@
                     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green"></div>
                 </div>
                 <div v-else>
-                    <div style="overflow-x:auto; overflow-y:auto; min-width:600px; max-height:60vh;">
+                    <div style="overflow-x:auto; overflow-y:auto; min-width:900px; max-height:70vh;">
                         <TrackList
                             :tracks="userTracks"
                             :canRemoveTracks="true"

@@ -54,10 +54,13 @@
     <div class="sidebar-playlists flex-1 flex flex-col items-center gap-2 overflow-y-auto w-full">
       <ul v-if="isAuthenticated" class="flex flex-col items-center gap-2 w-full">
         <li v-for="playlist in playlists" :key="playlist.id" class="w-full flex justify-center">
-          <router-link :to="{ name: 'playlist', params: { id: playlist.id } }" class="sidebar-icon-link flex flex-col items-center justify-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M9 3v18M21 3v18M3 9h18M3 15h18"/>
-            </svg>
+          <router-link :to="{ name: 'playlist', params: { id: playlist.id } }" class="sidebar-icon-link flex flex-row items-center justify-start w-full gap-2 px-2 py-1">
+            <img
+              :src="getPlaylistCover(playlist)"
+              alt="cover"
+              class="w-8 h-8 object-cover rounded mr-2"
+            />
+            <span class="truncate">{{ playlist.name }}</span>
           </router-link>
         </li>
       </ul>
@@ -165,6 +168,7 @@ import CreatePlaylistModal from '../playlist/CreatePlaylistModal.vue';
 import mitt from 'mitt';
 import mediateka from '../../../images/mediateka.png';
 import favorites from '../playlist/Favorites.vue';
+import baseMusic from '../../../images/baseMusic.png'
 // Получаем экземпляр шины событий если её еще нет
 const emitter = window.emitter || (window.emitter = mitt());
 
@@ -240,6 +244,14 @@ export default {
       }
     });
     
+    // Получить картинку для плейлиста (обложка первого трека или дефолт)
+    const getPlaylistCover = (playlist) => {
+      if (playlist.tracks && playlist.tracks.length > 0 && playlist.tracks[0].cover_path) {
+        return '/storage/' + playlist.tracks[0].cover_path;
+      }
+      return baseMusic;
+    };
+    
     return {
       playlists,
       spotifyLogo,
@@ -250,7 +262,8 @@ export default {
       onPlaylistCreated,
       mediateka,
       favorites,
-      isCompact
+      isCompact,
+      getPlaylistCover
     }
   }
 }

@@ -9,7 +9,10 @@
     <div v-else class="flex flex-col h-full playlist-header w-full rounded-t-md">
         <div class="flex items-center justify-start p-4 bg-transparent rounded-t-lg">
             <div class="flex items-center justify-start w-auto ml-4">
-                <img :src="coverImage" alt="playlist" class="w-64 bg-spotify-black p-2 shadow-xl shadow-spotify-black/70 rounded-md hover:shadow-2xl hover:shadow-spotify-black/90 transition-shadow duration-300">
+                <img :src="coverImage" alt="playlist"
+                  class="w-80 h-80 bg-spotify-black p-2 rounded-md transition-shadow duration-300"
+                  :style="{ boxShadow: '0 50px 300px 220px ' + coverShadow }"
+                >
             </div>
             <div class="flex items-center justify-start">
                 <!-- тут название приватный или публичный и количество треков -->
@@ -30,10 +33,10 @@
                 </div>
             </div>
         </div>
-        <div class="playlist-gradient flex flex-col w-full h-full">
-            <div class="flex items-center justify-start bg-transparent p-4 backdrop-opacity-10 backdrop-blur-sm">
+        <div class="bg-transparent flex flex-col w-full h-full">
+            <div class="flex items-center zjustify-start bg-transparent p-4 backdrop-opacity-10 backdrop-blur-sm">
               <div class="flex items-center justify-between w-full ml-4 gap-4">
-                  <button class="bg-spotify-green p-2 rounded-full">
+                  <button class="bg-spotify-green p-2 rounded-full" @click="playAll">
                       <img :src="playTrackIcon" alt="play" class="w-6 h-6">
                   </button>
                   <div class="flex items-center justify-start w-auto ml-4 gap-4">
@@ -116,7 +119,7 @@
 <script>
 import PlayIcon from '../../../images/baseMusic.png'
 import playTrack from '../../../images/play.png'
-import { ref, onMounted, computed, watch, inject } from 'vue'
+import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
 import TrackList from '../tracks/TrackList.vue'
 import PlaylistTrackAdder from './PlaylistTrackAdder.vue'
 import playlistService from '../../services/playlist'
@@ -154,10 +157,48 @@ export default {
     // Состояние для добавления треков
     const showAddTracksModal = ref(false);
     
-    // Вычисляемое значение для обложки плейлиста
-    const coverImage = computed(() => {
-      return playlist.value.cover_image || PlayIcon;
-    });
+    // Получаем текущий трек из плеера (через глобальный emitter или inject)
+    const currentTrack = ref(null);
+    const coverImage = ref(PlayIcon);
+    const coverShadow = ref('rgba(0,0,0,0.5)');
+    
+    // Функция для получения цвета картинки
+    function getDominantColor(imgUrl, cb) {
+      const img = new window.Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = imgUrl;
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let r=0,g=0,b=0,count=0;
+        for(let i=0;i<data.length;i+=4){
+          r+=data[i];g+=data[i+1];b+=data[i+2];count++;
+        }
+        r=Math.round(r/count);g=Math.round(g/count);b=Math.round(b/count);
+        cb(`rgba(${r},${g},${b},0.6)`);
+      }
+    }
+
+    function updateCover() {
+      let url = PlayIcon;
+      // Если currentTrack есть и у него есть cover_path или image — показываем его обложку
+      if (currentTrack.value && (currentTrack.value.cover_path || currentTrack.value.image)) {
+        url = currentTrack.value.cover_path ? '/storage/' + currentTrack.value.cover_path : currentTrack.value.image;
+      } else if (tracks.value.length > 0 && tracks.value[0].cover_path) {
+        url = '/storage/' + tracks.value[0].cover_path;
+      }
+      coverImage.value = url;
+      // Обновить тень
+      nextTick(() => getDominantColor(url, color => coverShadow.value = color));
+      console.log('coverImage обновлён:', url, 'currentTrack:', currentTrack.value);
+    }
+
+    // Следим за треками и текущим треком
+    watch([tracks, currentTrack], updateCover, { immediate: true });
     
     // Вычисляемое значение для общей длительности плейлиста
     const totalDuration = computed(() => {
@@ -274,16 +315,35 @@ export default {
       }
     }, { immediate: true });
     
+    // Запуск всего плейлиста с первого трека
+    function playAll() {
+      if (tracks.value.length === 0) return;
+      const playlistTracks = tracks.value.map(t => ({
+        ...t,
+        url: '/storage/' + t.file_path
+      }));
+      window.emitter.emit('play-track', {
+        playlistTracks,
+        index: 0
+      });
+    }
+    
     onMounted(() => {
       if (route.params.id) {
         fetchPlaylist(route.params.id);
       }
+      emitter.on('current-track-changed', (track) => {
+        currentTrack.value = track;
+        updateCover(); // сразу обновляем картинку
+        console.log('current-track-changed:', track);
+      });
     });
     
     return {
       playlist,
       tracks,
       coverImage,
+      coverShadow,
       playIcon: PlayIcon,
       playTrackIcon: playTrack,
       totalDuration,
@@ -302,7 +362,8 @@ export default {
       refreshPlaylist,
       isPlaylistOwner,
       deleteIcon,
-      addIcon
+      addIcon,
+      playAll
     }
   }
 }
