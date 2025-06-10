@@ -89,9 +89,11 @@ export default {
         UploadTrack,
         TrackList
     },
-    setup() {
+    props: {
+        currentUser: Object
+    },
+    setup(props) {
         const isPersonalModalOpen = ref(false);
-        const currentUser = inject('currentUser');
         const logoutUser = inject('logout');
         const showUploadTrack = ref(false);
         const showDeleteTracksModal = ref(false);
@@ -119,12 +121,12 @@ export default {
 
         // Отладочная информация
         onMounted(() => {
-            console.log('Personal.vue mounted, currentUser:', currentUser.value);
-            if (currentUser.value) {
+            console.log('Personal.vue mounted, currentUser:', props.currentUser);
+            if (props.currentUser) {
                 console.log('Данные пользователя:');
-                console.log('Имя:', currentUser.value.name || 'Не указано');
-                console.log('Email:', currentUser.value.email || 'Не указан');
-                console.log('ID:', currentUser.value.sub || 'Не указан');
+                console.log('Имя:', props.currentUser.name || 'Не указано');
+                console.log('Email:', props.currentUser.email || 'Не указан');
+                console.log('ID:', props.currentUser.sub || 'Не указан');
             }
             fetchUserDetails();
             emitter.on('user-track-added', loadUserTracks);
@@ -136,14 +138,14 @@ export default {
 
         // Функция для получения дополнительных данных о пользователе с сервера
         const fetchUserDetails = async () => {
-            if (!currentUser.value || !currentUser.value.sub) {
+            if (!props.currentUser || !props.currentUser.sub) {
                 console.log('ID пользователя не найден в токене');
                 return;
             }
 
             try {
                 // Запрашиваем данные пользователя по ID из токена
-                const userId = currentUser.value.sub;
+                const userId = props.currentUser.sub;
                 const response = await axios.get(`/api/users/${userId}`);
                 userDetails.value = response.data;
                 console.log('Получены данные пользователя из БД:', userDetails.value);
@@ -159,12 +161,12 @@ export default {
                 return userDetails.value.name;
             }
             
-            if (!currentUser.value) return 'Пользователь';
+            if (!props.currentUser) return 'Пользователь';
             
             // Проверка всех возможных полей имени
-            if (currentUser.value.name) return currentUser.value.name;
-            if (currentUser.value.username) return currentUser.value.username;
-            if (currentUser.value.email) return currentUser.value.email;
+            if (props.currentUser.name) return props.currentUser.name;
+            if (props.currentUser.username) return props.currentUser.username;
+            if (props.currentUser.email) return props.currentUser.email;
             
             // Если нет имени, отображаем ID или роль
             return `Пользователь ${userId.value || ''}`;
@@ -177,11 +179,11 @@ export default {
                 return userDetails.value.email;
             }
             
-            if (!currentUser.value) return '';
+            if (!props.currentUser) return '';
             
             // Прямой доступ к email
-            if (currentUser.value.email) {
-                return currentUser.value.email;
+            if (props.currentUser.email) {
+                return props.currentUser.email;
             }
             
             return '';
@@ -189,16 +191,16 @@ export default {
 
         // Получение ID пользователя из токена
         const userId = computed(() => {
-            if (!currentUser.value) return '';
+            if (!props.currentUser) return '';
             
             // ID в стандартном поле JWT
-            if (currentUser.value.sub) {
-                return currentUser.value.sub;
+            if (props.currentUser.sub) {
+                return props.currentUser.sub;
             }
 
             // ID в нестандартном поле
-            if (currentUser.value.id) {
-                return currentUser.value.id;
+            if (props.currentUser.id) {
+                return props.currentUser.id;
             }
             
             return '';
@@ -264,10 +266,10 @@ export default {
         const loadUserTracks = async () => {
             loadingUserTracks.value = true;
             try {
-                const userId = currentUser.value?.sub || currentUser.value?.id;
-                const isAdmin = currentUser.value?.email === 'admin@test.com';
+                const userId = props.currentUser?.sub || props.currentUser?.id;
+                const isAdmin = props.currentUser?.email === 'admin@test.com';
                 const response = await axios.get('/api/tracks');
-                console.log('userTracks (raw):', response.data, 'userId:', userId, 'currentUser:', currentUser.value);
+                console.log('userTracks (raw):', response.data, 'userId:', userId, 'currentUser:', props.currentUser);
                 userTracks.value = isAdmin
                     ? response.data // админ видит все треки
                     : response.data.filter(track => track.user_id == userId);
@@ -306,7 +308,7 @@ export default {
             addTrackIcon,
             deleteItemIcon,
             logoutIcon,
-            currentUser,
+            currentUser: props.currentUser,
             displayName,
             displayEmail,
             userInitials,

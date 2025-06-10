@@ -275,5 +275,47 @@ button > svg {
 button:hover > svg {
   transform: scale(1.1);
 }
+
+@media (max-width: 900px) {
+  .px-12 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .px-6 {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .w-12, .w-24, .w-16 {
+    width: 40px !important;
+  }
+  .h-12 {
+    height: 40px !important;
+  }
+  .text-sm {
+    font-size: 0.9rem !important;
+  }
+}
+@media (max-width: 600px) {
+  .px-12 {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .px-6 {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  .w-12, .w-24, .w-16 {
+    width: 28px !important;
+  }
+  .h-12 {
+    height: 28px !important;
+  }
+  .text-sm {
+    font-size: 0.8rem !important;
+  }
+  table {
+    font-size: 0.8rem !important;
+  }
+}
 </style>
   

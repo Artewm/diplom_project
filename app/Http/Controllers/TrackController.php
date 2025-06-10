@@ -43,7 +43,7 @@ class TrackController extends Controller
             $validator = \Validator::make($request->all(), [
                 'title' => 'required|string|max:255',
                 'artist' => 'required|string|max:255',
-                'file' => 'required|file|mimes:mp3,wav,ogg|max:10240',
+                'file' => 'required|file|mimes:mp3,wav,ogg|max:20480',
             ]);
 
             if ($validator->fails()) {
@@ -139,11 +139,9 @@ class TrackController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
         $track = Track::findOrFail($id);
-        // Только admin может удалять любые треки, остальные — только свои (если есть user_id у трека)
-        if ($user->role !== 'admin') {
-            if (isset($track->user_id) && $track->user_id !== $user->id) {
-                return response()->json(['error' => 'Нет прав на удаление этого трека'], 403);
-            }
+        // Любой пользователь может удалять только свои треки
+        if (isset($track->user_id) && $track->user_id !== $user->id) {
+            return response()->json(['error' => 'Нет прав на удаление этого трека'], 403);
         }
         $track->delete();
         return response()->json(null, 204);

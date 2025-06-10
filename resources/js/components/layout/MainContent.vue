@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, inject, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, defineProps, inject } from 'vue'
 import axios from 'axios'
 import TrackList from '../tracks/TrackList.vue'
 import personalIcon from '../../../images/personal.png'
@@ -7,17 +7,16 @@ import Personal from '../auth/Personal.vue'
 import favoritesService from '../../services/favorites'
 import mitt from 'mitt'
 
+const props = defineProps({
+  currentUser: { type: Object, default: null },
+  isAuthenticated: { type: [Boolean, Object], default: false }
+})
+
 // Создаем экземпляр шины событий если её еще нет
 const emitter = window.emitter || (window.emitter = mitt())
 
-// Получение данных аутентификации
-const isAuthenticated = inject('isAuthenticated')
-const currentUser = inject('currentUser')
-
-// Получение функций модальных окон
-const openLoginModal = inject('openLoginModal')
-const openRegistrationModal = inject('openRegistrationModal')
-const openPersonalModal = inject('openPersonalModal')
+const isAuthenticated = computed(() => props.isAuthenticated)
+const currentUser = computed(() => props.currentUser)
 
 // const playlists = ref([
 //   {
@@ -48,6 +47,7 @@ const userName = computed(() => {
 })
 
 const togglePersonalMenu = (event) => {
+  console.log('togglePersonalMenu click');
   showPersonalMenu.value = !showPersonalMenu.value
   if (showPersonalMenu.value) {
     // Позиционируем меню под кнопкой
@@ -134,6 +134,9 @@ watch(isAuthenticated, (newValue) => {
   }
 })
 
+const openLoginModal = inject('openLoginModal')
+const openRegistrationModal = inject('openRegistrationModal')
+
 onMounted(async () => {
   document.addEventListener('click', closeMenuOnClickOutside)
   
@@ -213,9 +216,9 @@ onMounted(async () => {
           
           <!-- Выпадающее меню -->
           <div v-if="showPersonalMenu" 
-               class="absolute z-50 personal-menu-container" 
-               :style="{ top: personalMenuPosition.top, right: personalMenuPosition.right }">
-            <Personal />
+               class="absolute z-[9999] personal-menu-container bg-[#232323] border border-gray-700 rounded-md shadow-lg"
+               :style="{ top: personalMenuPosition.top, right: personalMenuPosition.right, minWidth: '250px', position: 'absolute' }">
+            <Personal :current-user="currentUser" />
           </div>
         </div>
       </div>
@@ -250,5 +253,35 @@ onMounted(async () => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translate(-30px, -10px); }
   to { opacity: 1; transform: translateX(-30px); }
+}
+
+@media (max-width: 900px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 8px;
+  }
+  main {
+    padding: 12px 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 2px;
+  }
+  .flex.items-center.space-x-4 {
+    flex-direction: column;
+    gap: 8px;
+  }
+  main {
+    padding: 8px 2px;
+  }
+  h1 {
+    font-size: 1.2rem;
+  }
 }
 </style>

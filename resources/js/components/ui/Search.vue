@@ -25,7 +25,8 @@
               <div 
                 v-for="track in searchResults.tracks"
                 :key="track.id"
-                class="flex items-center p-4 bg-white/5 hover:bg-white/10 rounded-md group"
+                class="flex items-center p-4 bg-white/5 hover:bg-white/10 rounded-md group cursor-pointer"
+                @click="playTrack(track)"
               >
                 <img 
                   :src="track.image || 'https://via.placeholder.com/48'" 
@@ -36,14 +37,6 @@
                   <div class="text-white font-medium truncate">{{ track.title }}</div>
                   <div class="text-sm text-gray-400 truncate">{{ track.artist }}</div>
                 </div>
-                <button 
-                  @click="playTrack(track)"
-                  class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                >
-                  <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
@@ -138,7 +131,13 @@
     isLoading.value = true
     try {
       const response = await axios.get(`/api/search?q=${encodeURIComponent(searchQuery.value)}`)
-      searchResults.value = response.data
+      searchResults.value = {
+        ...response.data,
+        tracks: response.data.tracks.map(track => ({
+          ...track,
+          url: track.file_path ? `/storage/${track.file_path}` : undefined
+        }))
+      }
     } catch (error) {
       console.error('Ошибка поиска:', error)
     } finally {
@@ -147,8 +146,7 @@
   }
   
   function playTrack(track) {
-    console.log('Воспроизведение трека:', track)
-    // Здесь можно вставить свою логику воспроизведения
+    window.emitter.emit('play-track', track)
   }
   </script>
   
@@ -157,6 +155,35 @@
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .grid-cols-5 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .grid-cols-2 {
+      grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+    .px-6 {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+  }
+  @media (max-width: 600px) {
+    .grid-cols-5 {
+      grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+    .grid-cols-2 {
+      grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+    .px-6 {
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+    }
+    .py-4 {
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+    }
   }
   </style>
   

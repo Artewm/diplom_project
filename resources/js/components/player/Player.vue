@@ -1,10 +1,10 @@
 <template>
-  <div class="fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#282828] px-4 py-2">
+  <div class="fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#282828] px-4 py-2 z-40">
     <div class="flex items-center justify-between max-w-screen-xl mx-auto">
       <!-- Track Info -->
       <div class="flex items-center min-w-[180px] w-[30%]">
         <img 
-          :src="currentTrack.cover_path ? '/storage/' + currentTrack.cover_path : baseMusic" 
+          :src="currentTrack.image ? currentTrack.image : (currentTrack.cover_path ? '/storage/' + currentTrack.cover_path : baseMusic)" 
           :alt="currentTrack.title"
           class="h-14 w-14 rounded shadow mr-3"
         />

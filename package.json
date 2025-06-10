@@ -19,6 +19,8 @@
         "bootstrap": "^5.3.5",
         "mitt": "^3.0.1",
         "vue": "^3.2.47",
-        "vue-router": "^4.1.6"
+        "vue-router": "^4.1.6",
+        "wavesurfer.js": "^7.6.0",
+        "@kalimahapps/vue3-wavesurfer": "^2.0.2"
     }
 }

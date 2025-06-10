@@ -7,7 +7,7 @@
 
       <!-- Main Content -->
       <main class="flex-1 flex flex-col overflow-hidden">
-        <router-view></router-view>
+        <router-view :current-user="currentUser" :is-authenticated="isAuthenticated" />
       </main>
     </div>
 

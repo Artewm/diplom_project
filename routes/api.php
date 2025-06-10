@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\GetController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\SearchController;
 
 
 // Публичный маршрут для получения всех треков
@@ -82,3 +83,6 @@ Route::post('/registration', [\App\Http\Controllers\User\StoreController::class,
 
 // Маршрут для получения данных пользователя по ID
 Route::middleware(['api', 'auth:api'])->get('/users/{id}', [\App\Http\Controllers\User\GetController::class, '__invoke']);
+
+// Публичный маршрут для поиска треков и исполнителей
+Route::get('search', [\App\Http\Controllers\SearchController::class, 'search']);
