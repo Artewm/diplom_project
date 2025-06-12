@@ -1,6 +1,6 @@
 <template>
     <div class="bg-spotify-gray rounded-md min-w-[250px] shadow-lg overflow-hidden">
-        <div v-if="currentUser" class="py-4 px-4 text-white bg-gray-700 border-b border-gray-600">
+        <div v-if="currentUser" class="py-4 px-4 text-white bg-gray-700 border-b border-gray-600" @click="addTrack" style="cursor:pointer;">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
                     {{ userInitials }}

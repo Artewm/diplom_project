@@ -340,7 +340,24 @@ export default {
     this.$refs.audioPlayer.volume = this.volume / 100
     window.emitter.on('play-track', this.setTrackAndPlay);
     this.fetchFavorites();
+    // Делаем текущий трек глобально доступным
+    window.playerCurrentTrack = this.currentTrack;
     provide('playerCurrentTrack', toRef(this, 'currentTrack'));
+    // Глобальный реактивный watcher для playerCurrentTrack
+    if (!window._playerCurrentTrackWatcher) {
+      window._playerCurrentTrackWatcher = this.$watch('currentTrack', (newTrack) => {
+        window.playerCurrentTrack = newTrack;
+        window.emitter.emit('current-track-changed', newTrack);
+      }, { deep: true });
+    }
+  },
+  watch: {
+    currentTrack: {
+      handler(newTrack) {
+        window.playerCurrentTrack = newTrack;
+      },
+      deep: true
+    }
   },
   beforeUnmount() {
     window.emitter.off('play-track', this.setTrackAndPlay);

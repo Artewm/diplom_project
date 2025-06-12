@@ -11,6 +11,7 @@
             <div class="flex items-center justify-start w-auto ml-4">
                 <img :src="coverImage" alt="playlist"
                   class="w-80 h-80 bg-spotify-black p-2 rounded-md transition-shadow duration-300"
+                  :onerror="`this.onerror=null;this.src='${PlayIcon}'`"
                   :style="{ boxShadow: '0 50px 300px 220px ' + coverShadow }"
                 >
             </div>
@@ -58,7 +59,8 @@
                   </div>
               </div>
             </div>
-            <div class="flex-grow bg-transparent overflow-y-auto border-t border-spotify-gray backdrop-blur-sm">
+            <div class="flex-grow bg-transparent overflow-y-auto border-t border-spotify-gray backdrop-blur-sm pb-28"
+                 style="max-height: 60vh; min-height: 200px;">
                 <TrackList 
                   class="w-full h-full" 
                   :tracks="tracks" 
@@ -119,7 +121,7 @@
 <script>
 import PlayIcon from '../../../images/baseMusic.png'
 import playTrack from '../../../images/play.png'
-import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
+import { ref, onMounted, computed, watch, inject, nextTick, watchEffect } from 'vue'
 import TrackList from '../tracks/TrackList.vue'
 import PlaylistTrackAdder from './PlaylistTrackAdder.vue'
 import playlistService from '../../services/playlist'
@@ -157,7 +159,8 @@ export default {
     // Состояние для добавления треков
     const showAddTracksModal = ref(false);
     
-    // Получаем текущий трек из плеера (через глобальный emitter или inject)
+    // Получаем текущий трек из плеера (через provide/inject или глобально)
+    const injectedPlayerTrack = inject('playerCurrentTrack', null);
     const currentTrack = ref(null);
     const coverImage = ref(PlayIcon);
     const coverShadow = ref('rgba(0,0,0,0.5)');
@@ -191,14 +194,34 @@ export default {
       } else if (tracks.value.length > 0 && tracks.value[0].cover_path) {
         url = '/storage/' + tracks.value[0].cover_path;
       }
+      // Fallback на дефолтную картинку, если url пустой или невалидный
+      if (!url || url === '/storage/' || url === 'undefined' || url === null) {
+        url = PlayIcon;
+      }
       coverImage.value = url;
       // Обновить тень
       nextTick(() => getDominantColor(url, color => coverShadow.value = color));
       console.log('coverImage обновлён:', url, 'currentTrack:', currentTrack.value);
     }
 
-    // Следим за треками и текущим треком
-    watch([tracks, currentTrack], updateCover, { immediate: true });
+    // Следим за глобальным playerCurrentTrack и обновляем coverImage
+    watchEffect(() => {
+      if (injectedPlayerTrack && injectedPlayerTrack.value) {
+        currentTrack.value = injectedPlayerTrack.value;
+        updateCover();
+      } else if (window.playerCurrentTrack) {
+        currentTrack.value = window.playerCurrentTrack;
+        updateCover();
+      }
+    });
+    
+    // Пуллим глобальный playerCurrentTrack раз в 500мс для полной синхронизации после перезагрузки
+    setInterval(() => {
+      if (window.playerCurrentTrack && currentTrack.value !== window.playerCurrentTrack) {
+        currentTrack.value = window.playerCurrentTrack;
+        updateCover();
+      }
+    }, 500);
     
     // Вычисляемое значение для общей длительности плейлиста
     const totalDuration = computed(() => {
@@ -274,6 +297,7 @@ export default {
         
         playlist.value = updatedPlaylist;
         showEditModal.value = false;
+        emitter.emit('playlist-updated', updatedPlaylist);
       } catch (err) {
         console.error('Ошибка при обновлении плейлиста:', err);
         editError.value = 'Не удалось обновить плейлист';
@@ -347,7 +371,7 @@ export default {
       }
       emitter.on('current-track-changed', (track) => {
         currentTrack.value = track;
-        updateCover(); // сразу обновляем картинку
+        updateCover();
         console.log('current-track-changed:', track);
       });
     });

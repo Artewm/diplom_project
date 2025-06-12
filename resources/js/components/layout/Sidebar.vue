@@ -197,6 +197,12 @@ export default {
       window.addEventListener('resize', handleResize);
       loadUserPlaylists();
       emitter.on('playlist-deleted', removeDeletedPlaylist);
+      emitter.on('playlist-updated', (updatedPlaylist) => {
+        const idx = playlists.value.findIndex(p => p.id === updatedPlaylist.id);
+        if (idx !== -1) {
+          playlists.value[idx].name = updatedPlaylist.name;
+        }
+      });
     });
     // --- конец добавленного ---
     

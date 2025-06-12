@@ -7,16 +7,14 @@
       </div>
       
       <div class="p-4">
-        <div class="relative">
+        <div class="relative flex ">
           <input 
             v-model="searchQuery" 
             type="text" 
             placeholder="Поиск треков" 
             class="w-full p-3 pl-10 rounded-md bg-spotify-black border border-gray-700 text-white focus:outline-none focus:border-spotify-green"
           >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          
         </div>
       </div>
       
@@ -42,7 +40,7 @@
           <div class="flex items-center">
             <div class="w-12 h-12 bg-spotify-black rounded-md mr-3 flex-shrink-0">
               <img 
-                :src="track.image || defaultCover" 
+                :src="track.cover_path ? '/storage/' + track.cover_path : (track.image ? track.image : defaultCover)" 
                 alt="Track cover" 
                 class="w-full h-full object-cover rounded-md"
               >
