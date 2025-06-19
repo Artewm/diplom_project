@@ -1,101 +1,126 @@
 {
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
-    "file": "assets/fa-brands-400-D1LuMI3I.ttf",
+    "file": "assets/fa-brands-400-808443ae.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
-    "file": "assets/fa-brands-400-D_cYUPeE.woff2",
+    "file": "assets/fa-brands-400-d7236a19.woff2",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf": {
-    "file": "assets/fa-regular-400-DZaxPHgR.ttf",
+    "file": "assets/fa-regular-400-54cf6086.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
-    "file": "assets/fa-regular-400-BjRzuEpd.woff2",
+    "file": "assets/fa-regular-400-e3456d12.woff2",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf": {
-    "file": "assets/fa-solid-900-D0aA9rwL.ttf",
+    "file": "assets/fa-solid-900-d2f05935.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
-    "file": "assets/fa-solid-900-CTAAxXor.woff2",
+    "file": "assets/fa-solid-900-aa759986.woff2",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf": {
-    "file": "assets/fa-v4compatibility-CCth-dXg.ttf",
+    "file": "assets/fa-v4compatibility-30f6abf6.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf"
   },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2": {
-    "file": "assets/fa-v4compatibility-C9RhG_FT.woff2",
+    "file": "assets/fa-v4compatibility-0ce9033c.woff2",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-vpk1i7Ur.css",
-    "src": "resources/css/app.css",
-    "isEntry": true
+    "file": "assets/app-781aa688.css",
+    "isEntry": true,
+    "src": "resources/css/app.css"
+  },
+  "resources/images/add.png": {
+    "file": "assets/add-a2a8cae1.png",
+    "src": "resources/images/add.png"
+  },
+  "resources/images/arrowNext.png": {
+    "file": "assets/arrowNext-44f23b59.png",
+    "src": "resources/images/arrowNext.png"
+  },
+  "resources/images/baseMusic.png": {
+    "file": "assets/baseMusic-6bc9e122.png",
+    "src": "resources/images/baseMusic.png"
+  },
+  "resources/images/delete.png": {
+    "file": "assets/delete-ab1ca2b2.png",
+    "src": "resources/images/delete.png"
+  },
+  "resources/images/duration.png": {
+    "file": "assets/duration-7d0b94a7.png",
+    "src": "resources/images/duration.png"
+  },
+  "resources/images/exit.png": {
+    "file": "assets/exit-16f8f6b3.png",
+    "src": "resources/images/exit.png"
+  },
+  "resources/images/lowVolume.png": {
+    "file": "assets/lowVolume-6021b43d.png",
+    "src": "resources/images/lowVolume.png"
+  },
+  "resources/images/maxVolume.png": {
+    "file": "assets/maxVolume-08277f59.png",
+    "src": "resources/images/maxVolume.png"
+  },
+  "resources/images/mediateka.png": {
+    "file": "assets/mediateka-ef12d863.png",
+    "src": "resources/images/mediateka.png"
+  },
+  "resources/images/mutt.png": {
+    "file": "assets/mutt-81f0fe0c.png",
+    "src": "resources/images/mutt.png"
+  },
+  "resources/images/personal.png": {
+    "file": "assets/personal-f2f5deac.png",
+    "src": "resources/images/personal.png"
+  },
+  "resources/images/play.png": {
+    "file": "assets/play-1ad530a5.png",
+    "src": "resources/images/play.png"
   },
   "resources/images/spotify.png": {
-    "file": "assets/spotify-CdLYxjBw.png",
+    "file": "assets/spotify-ebf12646.png",
     "src": "resources/images/spotify.png"
   },
+  "resources/js/app.css": {
+    "file": "assets/app-37add974.css",
+    "src": "resources/js/app.css"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-DWTXrR1v.js",
-    "name": "app",
-    "src": "resources/js/app.js",
-    "isEntry": true,
-    "dynamicImports": [
-      "resources/js/components/TrackList.vue",
-      "resources/js/components/Search.vue",
-      "resources/js/components/Library.vue"
-    ],
-    "css": [
-      "assets/app-DEr9PiRe.css"
-    ],
     "assets": [
-      "assets/spotify-CdLYxjBw.png",
-      "assets/fa-brands-400-D_cYUPeE.woff2",
-      "assets/fa-brands-400-D1LuMI3I.ttf",
-      "assets/fa-regular-400-BjRzuEpd.woff2",
-      "assets/fa-regular-400-DZaxPHgR.ttf",
-      "assets/fa-solid-900-CTAAxXor.woff2",
-      "assets/fa-solid-900-D0aA9rwL.ttf",
-      "assets/fa-v4compatibility-C9RhG_FT.woff2",
-      "assets/fa-v4compatibility-CCth-dXg.ttf"
-    ]
-  },
-  "resources/js/components/Library.vue": {
-    "file": "assets/Library-DqFDlZt6.js",
-    "name": "Library",
-    "src": "resources/js/components/Library.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.js"
+      "assets/spotify-ebf12646.png",
+      "assets/mediateka-ef12d863.png",
+      "assets/play-1ad530a5.png",
+      "assets/baseMusic-6bc9e122.png",
+      "assets/duration-7d0b94a7.png",
+      "assets/delete-ab1ca2b2.png",
+      "assets/arrowNext-44f23b59.png",
+      "assets/maxVolume-08277f59.png",
+      "assets/lowVolume-6021b43d.png",
+      "assets/mutt-81f0fe0c.png",
+      "assets/personal-f2f5deac.png",
+      "assets/add-a2a8cae1.png",
+      "assets/exit-16f8f6b3.png",
+      "assets/fa-brands-400-d7236a19.woff2",
+      "assets/fa-brands-400-808443ae.ttf",
+      "assets/fa-regular-400-e3456d12.woff2",
+      "assets/fa-regular-400-54cf6086.ttf",
+      "assets/fa-solid-900-aa759986.woff2",
+      "assets/fa-solid-900-d2f05935.ttf",
+      "assets/fa-v4compatibility-0ce9033c.woff2",
+      "assets/fa-v4compatibility-30f6abf6.ttf"
     ],
     "css": [
-      "assets/Library-DK8VXVYp.css"
-    ]
-  },
-  "resources/js/components/Search.vue": {
-    "file": "assets/Search-D9ZhC9OJ.js",
-    "name": "Search",
-    "src": "resources/js/components/Search.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.js"
+      "assets/app-37add974.css"
     ],
-    "css": [
-      "assets/Search-YwtQwa3T.css"
-    ]
-  },
-  "resources/js/components/TrackList.vue": {
-    "file": "assets/TrackList-C7Vw0WN0.js",
-    "name": "TrackList",
-    "src": "resources/js/components/TrackList.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.js"
-    ]
+    "file": "assets/app-7589c82a.js",
+    "isEntry": true,
+    "src": "resources/js/app.js"
   }
 }

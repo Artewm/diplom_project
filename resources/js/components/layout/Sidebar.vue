@@ -312,7 +312,7 @@ export default {
 .sidebar-divider {
   margin: 8px 0;
 }
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
   .sidebar-bar {
     width: 48px !important;
     min-width: 48px !important;
