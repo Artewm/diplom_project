@@ -1,7 +1,7 @@
 <template>
     <div class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')"></div>
-        <div class="flex flex-col items-center justify-between w-1/5 h-2/3 bg-zinc-800 rounded-lg z-10">
+        <div class="flex flex-col items-center justify-between w-1/5 min-w-72 h-4/5 min-h-120 bg-zinc-800 rounded-lg z-10">
             <div class="flex gap-2 items-center justify-center w-full mt-20">
                 <img :src="spotifyLogo" alt="logo" class="w-10 h-10">
                 <h2 class="text-xl font-bold">MUSIC LISTENER</h2>

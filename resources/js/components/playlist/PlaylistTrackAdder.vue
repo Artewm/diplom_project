@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="flex flex-col w-1/2 max-h-3/4 bg-zinc-800 rounded-lg z-10">
+    <div class="flex flex-col w-1/2 min-w-80 max-h-3/4 bg-zinc-800 rounded-lg z-10">
       <div class="p-6 border-b border-gray-700">
         <h2 class="text-xl font-bold">Добавить треки в плейлист</h2>
       </div>

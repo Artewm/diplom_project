@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, computed, watch, defineProps, inject } from 'vue'
+import { ref, onMounted, computed, watch, defineProps, inject, onUnmounted } from 'vue'
 import axios from 'axios'
 import TrackList from '../tracks/TrackList.vue'
 import personalIcon from '../../../images/personal.png'
 import Personal from '../auth/Personal.vue'
 import favoritesService from '../../services/favorites'
 import mitt from 'mitt'
+import Sidebar from './Sidebar.vue'
 
 const props = defineProps({
   currentUser: { type: Object, default: null },
@@ -32,6 +33,8 @@ const personalMenuPosition = ref({ top: 0, right: 0 })
 const tracks = ref([])
 const favorites = ref([])
 const loadingFavorites = ref(false)
+const showSidebar = ref(false)
+const isMobile = ref(window.innerWidth < 600)
 
 // Получаем имя пользователя для отображения
 const userName = computed(() => {
@@ -137,6 +140,16 @@ watch(isAuthenticated, (newValue) => {
 const openLoginModal = inject('openLoginModal')
 const openRegistrationModal = inject('openRegistrationModal')
 
+const handleBurgerClick = () => {
+  showSidebar.value = true
+}
+const closeSidebar = () => {
+  showSidebar.value = false
+}
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 600
+}
+
 onMounted(async () => {
   document.addEventListener('click', closeMenuOnClickOutside)
   
@@ -169,6 +182,12 @@ onMounted(async () => {
   emitter.on('user-track-added', loadTracks)
   // Подписка на удаление трека
   emitter.on('user-track-removed', loadTracks)
+
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
@@ -177,14 +196,10 @@ onMounted(async () => {
     <!-- Header -->
     <header class="flex items-center justify-between px-8 py-4">
       <div class="flex items-center space-x-4">
-        <button class="p-2 rounded-full bg-black/40">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button class="p-2 rounded-full bg-black/40">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        <!-- Бургер-меню для мобильных -->
+        <button v-if="isMobile && !showSidebar" class="focus:outline-none" @click="handleBurgerClick" aria-label="Открыть меню" style="z-index:10001">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       </div>
@@ -224,6 +239,16 @@ onMounted(async () => {
       </div>
     </header>
 
+    <!-- Sidebar оверлей -->
+    <transition name="sidebar-fade">
+      <div v-if="showSidebar" class="fixed inset-0 z-[10000] flex">
+        <div class="fixed inset-0 bg-black bg-opacity-60" @click="closeSidebar"></div>
+        <div class="relative z-[10001] w-60 h-full bg-spotify-black shadow-xl animate-slide-in">
+          <Sidebar :forceFull="true" />
+        </div>
+      </div>
+    </transition>
+
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto bg-gradient-to-b from-indigo-900 to-black p-8">
       <h1 class="text-2xl font-bold text-white mb-6">Популярные треки</h1>
@@ -256,32 +281,35 @@ onMounted(async () => {
 }
 
 @media (max-width: 900px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 8px;
-  }
+ 
   main {
     padding: 12px 4px;
   }
 }
 
 @media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 8px 2px;
-  }
-  .flex.items-center.space-x-4 {
-    flex-direction: column;
-    gap: 8px;
-  }
+  .md\:hidden { display: block !important; }
+  .md\:block { display: none !important; }
+ 
   main {
     padding: 8px 2px;
   }
   h1 {
     font-size: 1.2rem;
   }
+}
+
+.sidebar-fade-enter-active, .sidebar-fade-leave-active {
+  transition: opacity 0.2s;
+}
+.sidebar-fade-enter-from, .sidebar-fade-leave-to {
+  opacity: 0;
+}
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out;
 }
 </style>

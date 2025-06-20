@@ -1,27 +1,43 @@
 <template>
   <div class="fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#282828] px-4 py-2 z-40">
-    <div class="flex items-center justify-between max-w-screen-xl mx-auto">
+    <div class="player-grid max-w-screen-xl mx-auto">
       <!-- Track Info -->
-      <div class="flex items-center min-w-[180px] w-[30%]">
+      <div class="player-track-info">
         <img 
           :src="currentTrack.image ? currentTrack.image : (currentTrack.cover_path ? '/storage/' + currentTrack.cover_path : baseMusic)" 
           :alt="currentTrack.title"
-          class="h-14 w-14 rounded shadow mr-3"
+          class="h-12 w-12 md:h-14 md:w-14 rounded shadow mr-3"
         />
-        <div class="mr-4">
+        <div class="mr-4 min-w-0">
           <h4 class="text-sm text-white font-medium truncate">{{ currentTrack.title || 'Не выбран трек' }}</h4>
           <p class="text-xs text-gray-400 truncate">{{ currentTrack.artist || 'Неизвестный исполнитель' }}</p>
         </div>
-        <button class="text-gray-400 hover:text-white" @click="toggleFavorite">
+        <button class="ml-auto text-gray-400 hover:text-white hidden md:block" @click="toggleFavorite">
           <svg :class="[{ 'heart-animate': heartAnimate }]" class="w-5 h-5" :fill="isCurrentTrackFavorite ? '#ef4444' : 'none'" :stroke="isCurrentTrackFavorite ? '#ef4444' : 'currentColor'" viewBox="0 0 24 24" @animationend="heartAnimate = false">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
           </svg>
         </button>
       </div>
 
+      <!-- Volume Controls -->
+      <div class="player-volume">
+        <button class="text-gray-400 hover:text-white" @click="toggleMute">
+          <img :src="volumeIcon" alt="volumeIcon" class="w-5 h-5">
+        </button>
+        <div class="w-24">
+          <div class="h-1 bg-gray-600 rounded-full cursor-pointer" 
+               @click="adjustVolume"
+               @mousedown="startVolumeDrag">
+            <div class="h-full bg-white rounded-full relative group" :style="{ width: volume + '%' }">
+              <div class="absolute -right-2 -top-2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Player Controls -->
-      <div class="flex flex-col items-center max-w-[722px] w-[40%]">
-        <div class="flex items-center space-x-4 mb-1">
+      <div class="player-controls">
+        <div class="flex items-center justify-center space-x-4 mb-1">
           <button class="text-gray-400 hover:text-white" @click="previousTrack">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 3v18M18 3v18"/>
@@ -43,8 +59,8 @@
             <img :src="nextTrack" alt="nextTrack" class="w-5 h-5">
           </button>
         </div>
-        
-        <div class="flex items-center w-full space-x-2">
+        <!-- Прогрессбар -->
+        <div class="flex items-center w-[80%] md:w-full space-x-2 mt-1 player-progress">
           <span class="text-xs text-gray-400 w-10 text-right">{{ formatTime(currentTime) }}</span>
           <div class="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group"
                @click="seek"
@@ -56,24 +72,8 @@
           <span class="text-xs text-gray-400 w-10">{{ formatTime(duration) }}</span>
         </div>
       </div>
-
-      <!-- Volume Controls -->
-      <div class="flex items-center justify-end min-w-[180px] w-[30%] space-x-3">
-        <button class="text-gray-400 hover:text-white" @click="toggleMute">
-          <img :src="volumeIcon" alt="volumeIcon" class="w-5 h-5">
-        </button>
-        <div class="w-24">
-          <div class="h-1 bg-gray-600 rounded-full cursor-pointer" 
-               @click="adjustVolume"
-               @mousedown="startVolumeDrag">
-            <div class="h-full bg-white rounded-full relative group" :style="{ width: volume + '%' }">
-              <div class="absolute -right-2 -top-2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100"></div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-    <!-- Аудио элемент для воспроизведения -->
+    <!-- Аудио элемент -->
     <audio 
       ref="audioPlayer"
       :src="currentTrack.url"
@@ -83,6 +83,7 @@
     ></audio>
   </div>
 </template>
+
 
 <script>
 import { ref, onMounted, computed, watch, inject, toRef, provide } from 'vue'
@@ -377,4 +378,76 @@ export default {
 .heart-animate {
   animation: heart-pop 0.3s cubic-bezier(.4,2,.6,1) forwards;
 }
-</style> 
+
+.player-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+.player-track-info {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  grid-column: 1;
+}
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  grid-column: 2;
+}
+.player-volume {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  grid-column: 3;
+}
+
+@media (max-width: 767px) {
+  .player-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .player-track-info {
+    grid-row: 1;
+    grid-column: 1;
+    justify-content: flex-start;
+    margin-bottom: 0;
+  }
+  .player-volume {
+    grid-row: 1;
+    grid-column: 2;
+    justify-content: flex-end;
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .player-controls {
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 2;
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .player-progress {
+    width: 100% !important;
+  }
+}
+@media (min-width: 768px) {
+  .player-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    gap: 1rem;
+  }
+  .player-controls {
+    grid-row: 1 ;
+    width: 100%;
+    margin-bottom: 0;
+  }
+}
+</style>

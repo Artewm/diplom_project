@@ -1,78 +1,6 @@
 <!-- Боковая панель навигации -->
 <template>
-  <aside v-if="isCompact" class="sidebar-bar w-60 flex flex-col bg-spotify-black text-white h-screen items-center">
-    <!-- Logo -->
-    <div class="sidebar-logo flex flex-col items-center justify-center py-4">
-      <img :src="spotifyLogo" class="h-8 w-8 text-white" alt="spotify logo">
-    </div>
-
-    <!-- Navigation -->
-    <nav class="sidebar-nav flex flex-col items-center gap-4 mt-2 mb-4">
-      <router-link to="/" class="sidebar-icon-link flex flex-col items-center justify-center">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/>
-        </svg>
-      </router-link>
-      <router-link to="/search" class="sidebar-icon-link flex flex-col items-center justify-center">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M10.533 1.279c-5.18 0-9.407 4.14-9.407 9.279s4.226 9.279 9.407 9.279c2.234 0 4.29-.77 5.907-2.058l4.353 4.353a1 1 0 1 0 1.414-1.414l-4.344-4.344a9.157 9.157 0 0 0 2.077-5.816c0-5.14-4.226-9.28-9.407-9.28zm-7.407 9.279c0-4.006 3.302-7.279 7.407-7.279s7.407 3.273 7.407 7.279-3.302 7.279-7.407 7.279-7.407-3.273-7.407-7.279z"/>
-        </svg>
-      </router-link>
-      <router-link to="/library" class="sidebar-icon-link flex flex-col items-center justify-center">
-        <img :src="mediateka" class="w-6 h-6" alt="mediateka">
-      </router-link>
-    </nav>
-
-    <!-- Liked tracks -->
-    <div class="sidebar-liked flex flex-col items-center mb-2">
-      <router-link v-if="isAuthenticated" to="/favorites" class="sidebar-icon-link flex flex-col items-center justify-center">
-        <div class="liked-songs-icon w-6 h-6 flex items-center justify-center">
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 3.17647C7.0253 1.94647 5.19012 1.52647 3.66012 2.38235C2.13012 3.23823 1.49717 5.05647 2.0853 6.55823C2.67344 8.06 6.04295 11.36 8 12C9.95705 11.36 13.3266 8.06 13.9147 6.55823C14.5028 5.05647 13.8699 3.23823 12.3399 2.38235C10.8099 1.52647 8.9747 1.94647 8 3.17647Z" fill="white"/>
-          </svg>
-        </div>
-      </router-link>
-    </div>
-
-    <!-- Create Playlist -->
-    <div class="sidebar-create flex flex-col items-center mb-2">
-      <button v-if="isAuthenticated" @click="showCreatePlaylistModal = true" class="sidebar-icon-link flex flex-col items-center justify-center">
-        <div class="w-6 h-6 bg-white/10 rounded-sm flex items-center justify-center">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-          </svg>
-        </div>
-      </button>
-    </div>
-
-    <!-- Divider -->
-    <div class="sidebar-divider w-full flex flex-col items-center mb-2">
-      <div class="h-[1px] w-8 bg-white/10"></div>
-    </div>
-
-    <!-- Playlists List -->
-    <div class="sidebar-playlists flex-1 flex flex-col items-center gap-2 overflow-y-auto w-full">
-      <ul v-if="isAuthenticated" class="flex flex-col items-center gap-2 w-full">
-        <li v-for="playlist in playlists" :key="playlist.id" class="w-full flex justify-center">
-          <router-link :to="{ name: 'playlist', params: { id: playlist.id } }" class="sidebar-icon-link flex flex-row items-center justify-start w-full gap-2 px-2 py-1">
-            <img
-              :src="getPlaylistCover(playlist)"
-              alt="cover"
-              class="w-8 h-8 object-cover rounded mr-2"
-            />
-            <span class="truncate">{{ playlist.name }}</span>
-          </router-link>
-        </li>
-      </ul>
-    </div>
-    <!-- Модальное окно создания плейлиста -->
-    <CreatePlaylistModal
-      v-if="showCreatePlaylistModal"
-      @close="showCreatePlaylistModal = false"
-      @playlist-created="onPlaylistCreated"
-    />
-  </aside>
-  <aside v-else class="w-60 flex flex-col bg-spotify-black text-white h-screen">
+  <aside v-if="forceFull || !isCompact" class="w-60 flex flex-col bg-spotify-black text-white h-screen">
     <!-- старая широкая версия -->
     <div class="flex items-center justify-start gap-4 p-6">
       <img :src="spotifyLogo" class="h-8 text-white" alt="spotify logo">
@@ -140,7 +68,7 @@
       <ul v-else class="space-y-2">
         <li v-for="playlist in playlists" :key="playlist.id">
           <router-link :to="{ name: 'playlist', params: { id: playlist.id } }" class="block px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors truncate flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-10 h-10 mr-2" fill="currentColor" viewBox="0 0 24 24">
               <path d="M9 3v18M21 3v18M3 9h18M3 15h18"/>
             </svg>
             <span class="sidebar-link-text">{{ playlist.name }}</span>
@@ -152,6 +80,78 @@
         </li>
       </ul>
     </div>
+    <CreatePlaylistModal
+      v-if="showCreatePlaylistModal"
+      @close="showCreatePlaylistModal = false"
+      @playlist-created="onPlaylistCreated"
+    />
+  </aside>
+  <aside v-else class="sidebar-bar w-60 flex flex-col bg-spotify-black text-white h-screen items-center">
+    <!-- Logo -->
+    <div class="sidebar-logo flex flex-col items-center justify-center py-4">
+      <img :src="spotifyLogo" class="h-8 w-8 text-white" alt="spotify logo">
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav flex flex-col items-center gap-4 mt-2 mb-4">
+      <router-link to="/" class="sidebar-icon-link flex flex-col items-center justify-center">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/>
+        </svg>
+      </router-link>
+      <router-link to="/search" class="sidebar-icon-link flex flex-col items-center justify-center">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10.533 1.279c-5.18 0-9.407 4.14-9.407 9.279s4.226 9.279 9.407 9.279c2.234 0 4.29-.77 5.907-2.058l4.353 4.353a1 1 0 1 0 1.414-1.414l-4.344-4.344a9.157 9.157 0 0 0 2.077-5.816c0-5.14-4.226-9.28-9.407-9.28zm-7.407 9.279c0-4.006 3.302-7.279 7.407-7.279s7.407 3.273 7.407 7.279-3.302 7.279-7.407 7.279-7.407-3.273-7.407-7.279z"/>
+        </svg>
+      </router-link>
+      <router-link to="/library" class="sidebar-icon-link flex flex-col items-center justify-center">
+        <img :src="mediateka" class="w-6 h-6" alt="mediateka">
+      </router-link>
+    </nav>
+
+    <!-- Liked tracks -->
+    <div class="sidebar-liked flex flex-col items-center mb-2">
+      <router-link v-if="isAuthenticated" to="/favorites" class="sidebar-icon-link flex flex-col items-center justify-center">
+        <div class="liked-songs-icon w-6 h-6 flex items-center justify-center">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3.17647C7.0253 1.94647 5.19012 1.52647 3.66012 2.38235C2.13012 3.23823 1.49717 5.05647 2.0853 6.55823C2.67344 8.06 6.04295 11.36 8 12C9.95705 11.36 13.3266 8.06 13.9147 6.55823C14.5028 5.05647 13.8699 3.23823 12.3399 2.38235C10.8099 1.52647 8.9747 1.94647 8 3.17647Z" fill="white"/>
+          </svg>
+        </div>
+      </router-link>
+    </div>
+
+    <!-- Create Playlist -->
+    <div class="sidebar-create flex flex-col items-center mb-2">
+      <button v-if="isAuthenticated" @click="showCreatePlaylistModal = true" class="sidebar-icon-link flex flex-col items-center justify-center">
+        <div class="w-6 h-6 bg-white/10 rounded-sm flex items-center justify-center">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="sidebar-divider w-full flex flex-col items-center mb-2">
+      <div class="h-[1px] w-8 bg-white/10"></div>
+    </div>
+
+    <!-- Playlists List -->
+    <div class="sidebar-playlists flex-1 flex flex-col items-center gap-2 overflow-y-auto w-full">
+      <ul v-if="isAuthenticated" class="flex flex-col items-center gap-2 w-full">
+        <li v-for="playlist in playlists" :key="playlist.id" class="w-full flex justify-center">
+          <router-link :to="{ name: 'playlist', params: { id: playlist.id } }" class="sidebar-icon-link flex flex-row items-center justify-start w-full gap-2 px-2 py-1">
+            <img
+              :src="getPlaylistCover(playlist)"
+              alt="cover"
+              class="w-full h-full object-cover rounded"
+            />
+            <span class="truncate">{{ playlist.name }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
+    <!-- Модальное окно создания плейлиста -->
     <CreatePlaylistModal
       v-if="showCreatePlaylistModal"
       @close="showCreatePlaylistModal = false"
@@ -177,7 +177,13 @@ export default {
   components: {
     CreatePlaylistModal
   },
-  setup() {
+  props: {
+    forceFull: {
+      type: Boolean,
+      default: false
+    }
+  },
+  setup(props) {
     const playlists = ref([]);
     const loading = ref(false);
     const error = ref(null);
@@ -269,7 +275,8 @@ export default {
       mediateka,
       favorites,
       isCompact,
-      getPlaylistCover
+      getPlaylistCover,
+      forceFull: props.forceFull
     }
   }
 }
@@ -314,9 +321,9 @@ export default {
 }
 @media (max-width: 1080px) {
   .sidebar-bar {
-    width: 48px !important;
-    min-width: 48px !important;
-    max-width: 48px !important;
+    width: 56px !important;
+    min-width: 56px !important;
+    max-width: 60px !important;
     padding: 0 !important;
   }
   .sidebar-logo img {

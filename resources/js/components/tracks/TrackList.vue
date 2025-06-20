@@ -3,16 +3,17 @@
       <table class="min-w-full text-sm text-gray-300">
         <thead class="uppercase text-xs font-semibold border-b border-white/10">
           <tr>
-            <th class="px-12 py-3 text-left w-12">#</th>
+            <th class="px-12 py-3 text-left w-12"
+              :class="[{ 'hide-on-mobile': isPlaylist }]">#</th>
             <th class="px-6 py-3 text-left">Название</th>
-            <th class="px-6 py-3 text-left">Исполнитель</th>
-            <th class="px-6 py-3 text-right w-24 pl-4">
+            <th class="px-6 py-3 text-left hidden md:table-cell">Исполнитель</th>
+            <th class="px-6 py-3 text-right w-24 pl-4"
+              :class="[{ 'hide-on-mobile': isPlaylist }]">
               <div class="flex items-center justify-center">
                 <img :src="durationIcon" alt="duration" class="w-4 h-4">
               </div>
             </th>
             <th v-if="canRemoveTracks" class="px-6 py-3 text-right w-16">Действия</th>
-            <th v-if="isPlaylist && canRemoveTracks" class="px-6 py-3 text-right w-16">Действия</th>
           </tr>
         </thead>
   
@@ -23,9 +24,12 @@
             class="group hover:bg-white/5 transition duration-200"
             @mouseenter="hoveredTrack = track.id"
             @mouseleave="hoveredTrack = null"
+            @click="playTrack(track)"
           >
             <!-- Номер или кнопка Play -->
-            <td class="px-12 py-3 text-center text-gray-400 group-hover:text-white">
+            <td 
+              class="px-12 py-3 text-center text-gray-400 group-hover:text-white"
+              :class="[{ 'hide-on-mobile': isPlaylist }]">
               <span v-if="!hoveredTrack || hoveredTrack !== track.id">{{ index + 1 }}</span>
               <button v-else @click="playTrack(track)" class="focus:outline-none">
                 <img :src="playIcon" class="w-10 " alt="play" />
@@ -38,38 +42,53 @@
                 <img
                   :src="track.cover_path ? '/storage/' + track.cover_path : PlayIcon"
                   :alt="track.title"
-                  class="w-12 h-12 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0 "
+                  class="w-12 h-12 object-cover rounded-full bg-spotify-gray mr-4 flex-shrink-0"
                 />
-                <div class="text-white font-medium truncate">
-                  {{ track.title }}
+                <div class="min-w-0">
+                  <div class="text-white font-medium truncate">
+                    {{ track.title }}
+                  </div>
+                  <!-- Исполнитель только на мобилках -->
+                  <div class="text-gray-400 text-sm md:hidden truncate">
+                    {{ track.artist }}
+                  </div>
                 </div>
               </div>
             </td>
   
             <!-- Исполнитель -->
-            <td class="px-6 py-3 text-gray-400 truncate">
+            <td class="px-6 py-3 text-gray-400 truncate hidden md:table-cell">
               {{ track.artist }}
             </td>
   
             <!-- Длительность -->
-            <td class="px-6 py-3 text-center text-gray-400">
+            <td 
+              class="px-6 py-3 text-center text-gray-400"
+              :class="[{ 'hide-on-mobile': isPlaylist }]">
               {{ formatDuration(track.duration) }}
             </td>
             
             <!-- Кнопки управления -->
-            <td class="px-6 py-3 text-center text-gray-400">
+            <td v-if="canRemoveTracks" class="px-6 py-3 text-center text-gray-400">
               <div class="flex items-center justify-end gap-2">
                 <!-- Кнопка удаления для плейлиста -->
                 <button 
                   v-if="isPlaylist && canRemoveTracks"
                   @click="removeTrackFromPlaylist(track.id)" 
-                  class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity p-1"
+                  class="hover:text-red-500 transition-opacity p-1 self-center mr-4"
                   title="Удалить из плейлиста">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                   </svg>
                 </button>
-                
+                <!-- Кнопка удаления трека (универсальная) -->
+                <button 
+                  v-if="!isPlaylist && canRemoveTracks"
+                  @click="$emit('remove-track', track.id)" 
+                  class="hover:text-red-500 transition-colors duration-200 px-2 py-1 rounded-md bg-red-500 bg-opacity-20 hover:bg-opacity-30"
+                  title="Удалить трек">
+                  <img :src="deleteIcon" alt="delete" class="w-5 h-5">
+                </button>
                 <!-- Кнопка удаления из избранного -->
                 <button 
                   v-if="showRemoveFromFavorites && isAuthenticated && isInFavorites(track.id)"
@@ -80,7 +99,6 @@
                     <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
                   </svg>
                 </button>
-                
                 <!-- Кнопка добавления в избранное -->
                 <button 
                   v-if="showAddToFavorites && isAuthenticated && !isInFavorites(track.id)"
@@ -91,7 +109,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                   </svg>
                 </button>
-                
                 <!-- Кнопка добавления в плейлист -->
                 <button 
                   v-if="!isPlaylist && isAuthenticated"
@@ -103,16 +120,6 @@
                   </svg>
                 </button>
               </div>
-            </td>
-            
-            <!-- Кнопка удаления трека (отдельная колонка) -->
-            <td v-if="canRemoveTracks" class="px-6 py-3 text-center text-gray-400">
-              <button 
-                @click="$emit('remove-track', track.id)" 
-                class="hover:text-red-500 transition-colors duration-200 px-2 py-1 rounded-md bg-red-500 bg-opacity-20 hover:bg-opacity-30"
-                title="Удалить трек">
-                <img :src="deleteIcon" alt="delete" class="w-5 h-5">
-              </button>
             </td>
           </tr>
         </tbody>
@@ -315,6 +322,33 @@ button:hover > svg {
   }
   table {
     font-size: 0.8rem !important;
+  }
+}
+@media (max-width: 500px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .pb-20, .pb-28, .pb-32 {
+    padding-bottom: 20rem !important;
+  }
+  .pb-40 {
+    padding-bottom: 20rem !important;
+  }
+  .tracklist-padding {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  table {
+    font-size: 0.8rem !important;
+  }
+}
+@media (min-width: 501px) {
+  .pb-20, .pb-28, .pb-32 {
+    padding-bottom: 10rem !important;
+  }
+  .tracklist-padding {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="flex flex-col items-center justify-between w-1/4 bg-zinc-800 rounded-lg z-10 p-6">
+    <div class="flex flex-col items-center justify-between w-1/4 min-w-80 bg-zinc-800 rounded-lg z-10 p-6">
       <h2 class="text-xl font-bold mb-6">Создать плейлист</h2>
       
       <div v-if="error" class="w-full p-2 mb-4 bg-red-500/20 text-red-500 rounded-md text-center">

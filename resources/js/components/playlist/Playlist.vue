@@ -7,10 +7,10 @@
       <div class="text-red-400">{{ error }}</div>
     </div>
     <div v-else class="flex flex-col h-full playlist-header w-full rounded-t-md">
-        <div class="flex items-center justify-start p-4 bg-transparent rounded-t-lg">
-            <div class="flex items-center justify-start w-auto ml-4">
+        <div class="flex items-center justify-start p-4 bg-transparent rounded-t-lg playlistHeaderMb">
+            <div class="flex items-center justify-start w-auto ml-4 imgPlaylistContainerMb">
                 <img :src="coverImage" alt="playlist"
-                  class="w-80 h-80 bg-spotify-black p-2 rounded-md transition-shadow duration-300"
+                  class="w-80 h-80 bg-spotify-black p-2 rounded-md transition-shadow duration-300 imgPlaylistMb"
                   :onerror="`this.onerror=null;this.src='${PlayIcon}'`"
                   :style="{ boxShadow: '0 50px 300px 220px ' + coverShadow }"
                 >
@@ -18,9 +18,9 @@
             <div class="flex items-center justify-start">
                 <!-- тут название приватный или публичный и количество треков -->
                 <div class="flex flex-col items-start justify-between ml-4 gap-4">
-                    <span class="text-white text-xl font-roboto">{{ playlist.is_public ? 'Открытый плейлист' : 'Приватный плейлист' }}</span>
+                    <span class="text-white text-xl font-roboto publicPlaylistMb">{{ playlist.is_public ? 'Открытый плейлист' : 'Приватный плейлист' }}</span>
                     <div class="flex items-center gap-4">
-                      <span class="text-white text-4xl font-bold font-roboto">{{ playlist.name }}</span>
+                      <span class="text-white text-4xl font-bold font-roboto playlistNameMb">{{ playlist.name }}</span>
                       <button @click="showEditModal = true" class="text-gray-400 hover:text-white">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"></path>
@@ -35,25 +35,25 @@
             </div>
         </div>
         <div class="bg-transparent flex flex-col w-full h-full">
-            <div class="flex items-center zjustify-start bg-transparent p-4 backdrop-opacity-10 backdrop-blur-sm">
-              <div class="flex items-center justify-between w-full ml-4 gap-4">
-                  <button class="bg-spotify-green p-2 rounded-full" @click="playAll">
+            <div class="flex items-center zjustify-start bg-transparent p-4 backdrop-opacity-10 backdrop-blur-sm playlistNavMb">
+              <div class="flex items-center justify-between w-full ml-4 gap-4 playlistNavMb">
+                  <button class="bg-spotify-green p-2 rounded-full buttonPlaylistMb buttonPlaylistPlayMb" @click="playAll">
                       <img :src="playTrackIcon" alt="play" class="w-6 h-6">
                   </button>
                   <div class="flex items-center justify-start w-auto ml-4 gap-4">
                   <button 
                     @click="toggleVisibility" 
-                    class="text-white text-sm font-roboto bg-spotify-black p-2 rounded-md hover:bg-spotify-gray transition-colors duration-300">
+                    class="text-white text-sm font-roboto bg-spotify-black p-2 rounded-md hover:bg-spotify-gray transition-colors duration-300 buttonPlaylistPublicMb">
                       <span>{{ playlist.is_public ? 'Сделать приватным' : 'Сделать публичным' }}</span>
                   </button>
                   <button 
                     @click="showAddTracksModal = true" 
-                    class="text-white text-sm font-roboto bg-spotify-green p-2 rounded-md hover:bg-opacity-80 transition-colors duration-300">
+                    class="text-white text-sm font-roboto bg-spotify-green p-2 rounded-md hover:bg-opacity-80 transition-colors duration-300 buttonPlaylistMb">
                       <img :src="addIcon" alt="add" class="w-5 h-5">
                   </button>
                   <button 
                     @click="deletePlaylist" 
-                    class="text-white text-sm font-roboto bg-red-600 p-2 rounded-md hover:bg-red-700 transition-colors duration-300">
+                    class="text-white text-sm font-roboto bg-red-600 p-2 rounded-md hover:bg-red-700 transition-colors duration-300 buttonPlaylistMb">
                       <img :src="deleteIcon" alt="delete" class="w-5 h-5">
                   </button>
                   </div>
@@ -412,6 +412,49 @@ export default {
 }
 .playlist-header {
   background: linear-gradient(to bottom, #333333,  #121212, #121212);
+}
+@media (max-width: 767px) {
+  .imgPlaylistMb {
+    width: 150px;
+    height: 150px;
+  }
+}
+@media (max-width: 530px) {
+  
+  .imgPlaylistContainerMb {
+  
+    border: none !important;
+  }
+  .playlistHeaderMb {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .playlistNameMb {
+    font-size: 24px;
+  }
+  .publicPlaylistMb {
+    font-size: 16px;
+  }
+  .playlistNavMb {
+    padding: 0px !important;
+    margin: 5px 10px !important;
+    button {
+      margin: 0 !important;
+    }
+  }
+  .buttonPlaylistMb {
+    margin: 0 !important;
+    gap: 0 !important;
+    width: 40px;
+  }
+  .buttonPlaylistPublicMb {
+    width: 80px;
+    font-size: 12px;
+  }
+  .buttonPlaylistPlayMb {
+    width: 40px;
+  }
 }
 </style>
   

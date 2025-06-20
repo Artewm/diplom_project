@@ -13,15 +13,15 @@
     </div>
     <div v-else class="flex flex-col h-full w-full">
       <!-- Верхняя информация о плейлисте -->
-      <div class="flex items-start gap-6 mb-8 p-4">
-        <div class="w-64 h-64 liked-songs-gradient rounded-lg shadow-xl flex items-center justify-center heart-icon-container">
+      <div class="flex items-start gap-6 mb-8 p-4 headerFavoritesMb">
+        <div class="w-64 h-64 liked-songs-gradient rounded-lg shadow-xl flex items-center justify-center heart-icon-container headerFavoritesMbIcon">
           <svg width="100" height="100" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 3.17647C7.0253 1.94647 5.19012 1.52647 3.66012 2.38235C2.13012 3.23823 1.49717 5.05647 2.0853 6.55823C2.67344 8.06 6.04295 11.36 8 12C9.95705 11.36 13.3266 8.06 13.9147 6.55823C14.5028 5.05647 13.8699 3.23823 12.3399 2.38235C10.8099 1.52647 8.9747 1.94647 8 3.17647Z" fill="white"/>
           </svg>
         </div>
-        <div class="flex flex-col justify-end h-64 py-4">
+        <div class="flex flex-col justify-end h-64 py-4 headerFavoritesMbTitleContainer">
           <div class="text-white text-sm font-medium mb-3">Плейлист</div>
-          <h1 class="text-white text-7xl font-bold mb-6">Любимые треки</h1>
+          <h1 class="text-white text-7xl font-bold mb-6 headerFavoritesMbTitle">Любимые треки</h1>
           <div class="flex items-center text-white text-sm opacity-80">
             <span>{{ username }}</span>
             <span class="mx-1">•</span>
@@ -40,15 +40,17 @@
           </button>
         </div>
         
-        <div class="flex-grow overflow-y-auto">
-          <TrackList 
-            class="w-full" 
-            :tracks="tracks" 
-            @remove-from-favorites="removeFromFavorites" 
-            :show-remove-from-favorites="true"
-            :show-add-to-favorites="false"
-            :favorites="tracks"
-          />
+        <div class="flex-grow overflow-y-auto overflow-x-auto pb-28">
+          <div style="max-height: 60vh; min-height: 200px; overflow-y: auto; padding: 1rem;">
+            <TrackList 
+              class="w-full" 
+              :tracks="tracks" 
+              @remove-from-favorites="removeFromFavorites" 
+              :show-remove-from-favorites="true"
+              :show-add-to-favorites="false"
+              :favorites="tracks"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -221,6 +223,31 @@ export default {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-size: 0.75rem;
+}
+@media (max-width: 767px) {
+  .headerFavoritesMb {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 20px 10px !important;
+  }
+  .headerFavoritesMbIcon {
+    width: 100px;
+    height: 100px;
+  }
+  .headerFavoritesMbIcon svg {
+    width: 50px;
+    height: 50px;
+  }
+  .headerFavoritesMbTitle {
+    font-size: 32px;
+  }
+  .headerFavoritesMbTitleContainer {
+    margin-top: 0 !important;
+    height: auto !important;
+  }
 }
 </style>
  
