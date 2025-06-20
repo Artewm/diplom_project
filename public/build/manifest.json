@@ -32,7 +32,7 @@
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-781aa688.css",
+    "file": "assets/app-2184c8b7.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -89,7 +89,7 @@
     "src": "resources/images/spotify.png"
   },
   "resources/js/app.css": {
-    "file": "assets/app-37add974.css",
+    "file": "assets/app-f97d7411.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.js": {
@@ -117,9 +117,9 @@
       "assets/fa-v4compatibility-30f6abf6.ttf"
     ],
     "css": [
-      "assets/app-37add974.css"
+      "assets/app-f97d7411.css"
     ],
-    "file": "assets/app-7589c82a.js",
+    "file": "assets/app-1f59450d.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   }
