@@ -139,11 +139,18 @@ class TrackController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
         $track = Track::findOrFail($id);
-        // Любой пользователь может удалять только свои треки
-        if (isset($track->user_id) && $track->user_id !== $user->id) {
-            return response()->json(['error' => 'Нет прав на удаление этого трека'], 403);
+
+        $isAdmin = ($user->email === 'admin@test.com');
+        // Проверяем, что у трека есть владелец и этот владелец - текущий пользователь
+        $isOwner = (isset($track->user_id) && $track->user_id === $user->id);
+
+        // Если пользователь - админ или владелец трека, то удаляем
+        if ($isAdmin || $isOwner) {
+            $track->delete();
+            return response()->json(null, 204);
         }
-        $track->delete();
-        return response()->json(null, 204);
+
+        // В противном случае - ошибка доступа
+        return response()->json(['error' => 'Нет прав на удаление этого трека'], 403);
     }
 }
